@@ -22,8 +22,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "8069:8069"
     environment:
       - HOST=db
       - USER=odoo17
@@ -36,7 +34,7 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:stable-alpine
+    image: nginx:alpine
     container_name: odoo17-nginx
     depends_on:
       - web
@@ -47,16 +45,15 @@ services:
       - ./config/nginx.conf:/etc/nginx/conf.d/odoo.conf:ro
       - ./config/certs:/etc/nginx/certs:ro
       - ./config/certbot/www:/var/www/certbot:ro
-      - ./logs:/var/log/nginx
     restart: unless-stopped
 
   certbot:
-    image: certbot/certbot:latest
+    image: certbot/certbot
     container_name: odoo17-certbot
     volumes:
       - ./config/certbot/certs:/etc/letsencrypt
       - ./config/certbot/www:/var/www/certbot
-    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done"
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done;'"
     restart: unless-stopped
 
 volumes:
