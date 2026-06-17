@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════
+         REPORT ACTION
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="action_report_boq" model="ir.actions.report">
+        <field name="name">طباعة جدول الكميات | Print BOQ</field>
+        <field name="model">construction.boq</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">construction_management.report_boq_document</field>
+        <field name="report_file">construction_management.report_boq</field>
+        <field name="print_report_name">'BOQ_' + (object.boq_code or object.name or 'boq')</field>
+        <field name="paperformat_id" ref="paperformat_construction_landscape"/>
+        <field name="binding_model_id" ref="model_construction_boq"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         QWEB TEMPLATE
+    ═══════════════════════════════════════════════════════════ -->
+    <template id="report_boq_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page" style="direction: rtl; font-family: Tahoma, Arial, sans-serif; font-size: 10px;">
+
+                        <!-- TITLE ─────────────────────────────────────── -->
+                        <div style="text-align: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 3px solid #1F4E79;">
+                            <h3 style="color: #1F4E79; margin: 0 0 4px 0; font-size: 16px;">
+                                جدول الكميات — Bill of Quantities
+                            </h3>
+                            <h5 style="color: #444; margin: 0; font-size: 12px;">
+                                <span t-field="doc.boq_code"/>
+                                &amp;nbsp;|&amp;nbsp;
+                                <t t-if="doc.state == 'draft'"><span style="color:#888;">مسودة</span></t>
+                                <t t-elif="doc.state == 'confirmed'"><span style="color:#27ae60;">معتمد</span></t>
+                                <t t-elif="doc.state == 'cancelled'"><span style="color:#c0392b;">ملغي</span></t>
+                            </h5>
+                        </div>
+
+                        <!-- INFO ──────────────────────────────────────── -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10px;">
+                            <tr>
+                                <td style="width: 50%; vertical-align: top; padding-left: 10px;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc; width: 35%;">العنوان</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;"><span t-field="doc.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">المشروع</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;"><span t-field="doc.project_id"/></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc; width: 35%;">التاريخ</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;"><span t-field="doc.date"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">العملة</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;"><span t-field="doc.currency_id"/></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- LINES TABLE ───────────────────────────────── -->
+                        <h5 style="color: #1F4E79; margin: 0 0 6px 0; padding-right: 6px; border-right: 4px solid #1F4E79; font-size: 11px;">
+                            البنود
+                        </h5>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 14px;">
+                            <thead>
+                                <tr style="background-color: #1F4E79; color: white; text-align: center;">
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 3%;">#</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 7%;">الكود</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 20%;">الوصف</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 8%;">النوع</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 6%;">الوحدة</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 8%;">الكمية التقديرية</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 9%;">سعر الوحدة</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 10%; background-color: #2d6a9f;">إجمالي التقديري</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 8%;">الكمية الفعلية</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 10%;">إجمالي الفعلي</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 10%;">الفرق</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Group by item_type -->
+                                <t t-set="current_type" t-value="''"/>
+                                <t t-foreach="doc.line_ids" t-as="line">
+                                    <!-- Section header when type changes -->
+                                    <t t-if="line.item_type != current_type">
+                                        <t t-set="current_type" t-value="line.item_type"/>
+                                        <tr style="background-color: #dce6f1;">
+                                            <td colspan="11" style="padding: 4px 8px; border: 1px solid #ccc; font-weight: bold; font-size: 10px; text-align: right;">
+                                                <t t-if="line.item_type == 'material'">▸ مواد — Materials</t>
+                                                <t t-elif="line.item_type == 'labor'">▸ عمالة — Labor</t>
+                                                <t t-elif="line.item_type == 'equipment'">▸ معدات — Equipment</t>
+                                                <t t-elif="line.item_type == 'subcontract'">▸ مقاول باطن — Subcontract</t>
+                                                <t t-elif="line.item_type == 'overhead'">▸ مصروفات عامة — Overhead</t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr t-att-style="'background-color:' + ('#f7f9fc' if line_odd else '#ffffff') + ';'">
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center;"><t t-esc="line_index + 1"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center;"><t t-esc="line.item_code or ''"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: right;"><span t-field="line.description"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center; font-size: 8px;">
+                                            <t t-if="line.item_type == 'material'">مواد</t>
+                                            <t t-elif="line.item_type == 'labor'">عمالة</t>
+                                            <t t-elif="line.item_type == 'equipment'">معدات</t>
+                                            <t t-elif="line.item_type == 'subcontract'">مقاول باطن</t>
+                                            <t t-elif="line.item_type == 'overhead'">مصروفات</t>
+                                        </td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center;"><t t-esc="line.uom_id.name if line.uom_id else ''"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'%.3f' % line.qty_estimated"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'{:,.2f}'.format(line.unit_price)"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left; font-weight: bold; background-color: #eef3fb;"><t t-esc="'{:,.2f}'.format(line.price_estimated)"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'%.3f' % line.qty_actual"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'{:,.2f}'.format(line.price_actual)"/></td>
+                                        <td t-att-style="'padding: 3px; border: 1px solid #ddd; text-align: left; color: ' + ('#27ae60' if line.variance >= 0 else '#c0392b') + ';'">
+                                            <t t-esc="'{:,.2f}'.format(line.variance)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color: #1F4E79; color: white; font-weight: bold; font-size: 10px;">
+                                    <td colspan="7" style="padding: 5px 8px; border: 1px solid #ccc; text-align: right;">الإجمالي</td>
+                                    <td style="padding: 5px 8px; border: 1px solid #ccc; text-align: left;"><t t-esc="'{:,.2f}'.format(doc.total_estimated)"/></td>
+                                    <td style="padding: 5px 8px; border: 1px solid #ccc;"></td>
+                                    <td style="padding: 5px 8px; border: 1px solid #ccc; text-align: left;"><t t-esc="'{:,.2f}'.format(doc.total_actual)"/></td>
+                                    <td t-att-style="'padding: 5px 8px; border: 1px solid #ccc; text-align: left; color: ' + ('#90ee90' if doc.variance >= 0 else '#ffb3b3') + ';'">
+                                        <t t-esc="'{:,.2f}'.format(doc.variance)"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- SUMMARY BOXES ─────────────────────────────── -->
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px;">
+                            <tr>
+                                <td style="width: 33%; padding: 5px;">
+                                    <div style="border: 2px solid #1F4E79; padding: 8px 12px; text-align: center;">
+                                        <div style="font-size: 9px; color: #666;">الإجمالي التقديري</div>
+                                        <div style="font-size: 13px; font-weight: bold; color: #1F4E79; font-family: monospace;">
+                                            <t t-esc="'{:,.2f}'.format(doc.total_estimated)"/>
+                                            <small> <t t-esc="doc.currency_id.name or ''"/></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="width: 33%; padding: 5px;">
+                                    <div style="border: 2px solid #27ae60; padding: 8px 12px; text-align: center;">
+                                        <div style="font-size: 9px; color: #666;">الإجمالي الفعلي</div>
+                                        <div style="font-size: 13px; font-weight: bold; color: #27ae60; font-family: monospace;">
+                                            <t t-esc="'{:,.2f}'.format(doc.total_actual)"/>
+                                            <small> <t t-esc="doc.currency_id.name or ''"/></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="width: 33%; padding: 5px;">
+                                    <div t-att-style="'border: 2px solid ' + ('#27ae60' if doc.variance >= 0 else '#c0392b') + '; padding: 8px 12px; text-align: center;'">
+                                        <div style="font-size: 9px; color: #666;">الفرق</div>
+                                        <div t-att-style="'font-size: 13px; font-weight: bold; font-family: monospace; color: ' + ('#27ae60' if doc.variance >= 0 else '#c0392b') + ';'">
+                                            <t t-esc="'{:,.2f}'.format(doc.variance)"/>
+                                            <small> <t t-esc="doc.currency_id.name or ''"/></small>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

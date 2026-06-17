@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         Root menu — Construction Management
+    ═══════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_construction_root"
+              name="إدارة المقاولات"
+              sequence="30"
+              web_icon="construction_management,static/description/icon.png"/>
+
+    <!-- ─── Dashboard ───────────────────────────────────────────── -->
+    <menuitem id="menu_construction_dashboard"
+              name="لوحة المتابعة | Dashboard"
+              parent="menu_construction_root"
+              action="action_open_dashboard_server"
+              sequence="1"/>
+
+    <!-- ─── Projects ──────────────────────────────────────────── -->
+    <menuitem id="menu_construction_projects"
+              name="المشاريع | Projects"
+              parent="menu_construction_root"
+              sequence="10"/>
+
+    <menuitem id="menu_construction_project_list"
+              name="كل المشاريع"
+              parent="menu_construction_projects"
+              action="action_construction_project"
+              sequence="10"/>
+
+    <!-- ─── BOQ ─────────────────────────────────────────────────── -->
+    <menuitem id="menu_construction_boq"
+              name="جداول الكميات | BOQ"
+              parent="menu_construction_root"
+              sequence="20"/>
+
+    <menuitem id="menu_construction_boq_list"
+              name="كل جداول الكميات"
+              parent="menu_construction_boq"
+              action="action_construction_boq"
+              sequence="10"/>
+
+    <!-- ─── Contracts ───────────────────────────────────────────── -->
+    <menuitem id="menu_construction_contracts"
+              name="العقود | Contracts"
+              parent="menu_construction_root"
+              sequence="30"/>
+
+    <menuitem id="menu_construction_contract_list"
+              name="كل العقود"
+              parent="menu_construction_contracts"
+              action="action_construction_contract"
+              sequence="10"/>
+
+    <menuitem id="menu_construction_subcontract_list"
+              name="عقود الباطن"
+              parent="menu_construction_contracts"
+              action="action_construction_subcontract"
+              sequence="20"/>
+
+    <!-- ─── Certificates ────────────────────────────────────────── -->
+    <menuitem id="menu_construction_certificates"
+              name="المستخلصات | Certificates"
+              parent="menu_construction_root"
+              sequence="40"/>
+
+    <menuitem id="menu_construction_certificate_list"
+              name="كل المستخلصات"
+              parent="menu_construction_certificates"
+              action="action_construction_certificate"
+              sequence="10"/>
+
+    <!-- ─── Configuration ─────────────────────────────────────── -->
+    <menuitem id="menu_construction_config"
+              name="الإعدادات | Configuration"
+              parent="menu_construction_root"
+              sequence="100"/>
+
+    <menuitem id="menu_construction_regions"
+              name="المناطق والمدن | Regions &amp; Cities"
+              parent="menu_construction_config"
+              action="action_construction_saudi_region"
+              sequence="10"/>
+
+</odoo>

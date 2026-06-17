@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+<data>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         13 Saudi Administrative Regions — المناطق الإدارية الـ 13
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <record id="region_riyadh" model="construction.saudi.region">
+        <field name="name">Riyadh Region</field>
+        <field name="name_ar">منطقة الرياض</field>
+        <field name="code">RIY</field>
+    </record>
+
+    <record id="region_makkah" model="construction.saudi.region">
+        <field name="name">Makkah Region</field>
+        <field name="name_ar">منطقة مكة المكرمة</field>
+        <field name="code">MKK</field>
+    </record>
+
+    <record id="region_madinah" model="construction.saudi.region">
+        <field name="name">Madinah Region</field>
+        <field name="name_ar">منطقة المدينة المنورة</field>
+        <field name="code">MED</field>
+    </record>
+
+    <record id="region_eastern" model="construction.saudi.region">
+        <field name="name">Eastern Province</field>
+        <field name="name_ar">المنطقة الشرقية</field>
+        <field name="code">EAS</field>
+    </record>
+
+    <record id="region_asir" model="construction.saudi.region">
+        <field name="name">Asir Region</field>
+        <field name="name_ar">منطقة عسير</field>
+        <field name="code">ASR</field>
+    </record>
+
+    <record id="region_jizan" model="construction.saudi.region">
+        <field name="name">Jizan Region</field>
+        <field name="name_ar">منطقة جازان</field>
+        <field name="code">JZN</field>
+    </record>
+
+    <record id="region_najran" model="construction.saudi.region">
+        <field name="name">Najran Region</field>
+        <field name="name_ar">منطقة نجران</field>
+        <field name="code">NJR</field>
+    </record>
+
+    <record id="region_bahah" model="construction.saudi.region">
+        <field name="name">Al-Bahah Region</field>
+        <field name="name_ar">منطقة الباحة</field>
+        <field name="code">BAH</field>
+    </record>
+
+    <record id="region_tabuk" model="construction.saudi.region">
+        <field name="name">Tabuk Region</field>
+        <field name="name_ar">منطقة تبوك</field>
+        <field name="code">TAB</field>
+    </record>
+
+    <record id="region_northern" model="construction.saudi.region">
+        <field name="name">Northern Borders Region</field>
+        <field name="name_ar">منطقة الحدود الشمالية</field>
+        <field name="code">NBR</field>
+    </record>
+
+    <record id="region_jouf" model="construction.saudi.region">
+        <field name="name">Al-Jouf Region</field>
+        <field name="name_ar">منطقة الجوف</field>
+        <field name="code">JOF</field>
+    </record>
+
+    <record id="region_hail" model="construction.saudi.region">
+        <field name="name">Hail Region</field>
+        <field name="name_ar">منطقة حائل</field>
+        <field name="code">HAL</field>
+    </record>
+
+    <record id="region_qassim" model="construction.saudi.region">
+        <field name="name">Qassim Region</field>
+        <field name="name_ar">منطقة القصيم</field>
+        <field name="code">QSM</field>
+    </record>
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         Cities — المدن
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Riyadh Region -->
+    <record id="city_riyadh" model="construction.saudi.city">
+        <field name="name">Riyadh</field>
+        <field name="name_ar">الرياض</field>
+        <field name="region_id" ref="region_riyadh"/>
+    </record>
+    <record id="city_kharj" model="construction.saudi.city">
+        <field name="name">Al-Kharj</field>
+        <field name="name_ar">الخرج</field>
+        <field name="region_id" ref="region_riyadh"/>
+    </record>
+    <record id="city_majmaah" model="construction.saudi.city">
+        <field name="name">Al-Majmaah</field>
+        <field name="name_ar">المجمعة</field>
+        <field name="region_id" ref="region_riyadh"/>
+    </record>
+    <record id="city_dawadmi" model="construction.saudi.city">
+        <field name="name">Dawadmi</field>
+        <field name="name_ar">الدوادمي</field>
+        <field name="region_id" ref="region_riyadh"/>
+    </record>
+    <record id="city_wadi_dawasir" model="construction.saudi.city">
+        <field name="name">Wadi Ad-Dawasir</field>
+        <field name="name_ar">وادي الدواسر</field>
+        <field name="region_id" ref="region_riyadh"/>
+    </record>
+    <record id="city_zulfi" model="construction.saudi.city">
+        <field name="name">Al-Zulfi</field>
+        <field name="name_ar">الزلفي</field>
+        <field name="region_id" ref="region_riyadh"/>
+    </record>
+    <record id="city_shaqra" model="construction.saudi.city">
+        <field name="name">Shaqra</field>
+        <field name="name_ar">شقراء</field>
+        <field name="region_id" ref="region_riyadh"/>
+    </record>
+
+    <!-- Makkah Region -->
+    <record id="city_jeddah" model="construction.saudi.city">
+        <field name="name">Jeddah</field>
+        <field name="name_ar">جدة</field>
+        <field name="region_id" ref="region_makkah"/>
+    </record>
+    <record id="city_makkah" model="construction.saudi.city">
+        <field name="name">Makkah Al-Mukarramah</field>
+        <field name="name_ar">مكة المكرمة</field>
+        <field name="region_id" ref="region_makkah"/>
+    </record>
+    <record id="city_taif" model="construction.saudi.city">
+        <field name="name">Taif</field>
+        <field name="name_ar">الطائف</field>
+        <field name="region_id" ref="region_makkah"/>
+    </record>
+    <record id="city_rabigh" model="construction.saudi.city">
+        <field name="name">Rabigh</field>
+        <field name="name_ar">رابغ</field>
+        <field name="region_id" ref="region_makkah"/>
+    </record>
+    <record id="city_qunfudhah" model="construction.saudi.city">
+        <field name="name">Al-Qunfudhah</field>
+        <field name="name_ar">القنفذة</field>
+        <field name="region_id" ref="region_makkah"/>
+    </record>
+    <record id="city_lith" model="construction.saudi.city">
+        <field name="name">Al-Lith</field>
+        <field name="name_ar">الليث</field>
+        <field name="region_id" ref="region_makkah"/>
+    </record>
+
+    <!-- Madinah Region -->
+    <record id="city_madinah" model="construction.saudi.city">
+        <field name="name">Madinah Al-Munawwarah</field>
+        <field name="name_ar">المدينة المنورة</field>
+        <field name="region_id" ref="region_madinah"/>
+    </record>
+    <record id="city_yanbu" model="construction.saudi.city">
+        <field name="name">Yanbu</field>
+        <field name="name_ar">ينبع</field>
+        <field name="region_id" ref="region_madinah"/>
+    </record>
+    <record id="city_ula" model="construction.saudi.city">
+        <field name="name">Al-Ula</field>
+        <field name="name_ar">العلا</field>
+        <field name="region_id" ref="region_madinah"/>
+    </record>
+    <record id="city_badr" model="construction.saudi.city">
+        <field name="name">Badr</field>
+        <field name="name_ar">بدر</field>
+        <field name="region_id" ref="region_madinah"/>
+    </record>
+
+    <!-- Eastern Province -->
+    <record id="city_dammam" model="construction.saudi.city">
+        <field name="name">Dammam</field>
+        <field name="name_ar">الدمام</field>
+        <field name="region_id" ref="region_eastern"/>
+    </record>
+    <record id="city_khobar" model="construction.saudi.city">
+        <field name="name">Al-Khobar</field>
+        <field name="name_ar">الخبر</field>
+        <field name="region_id" ref="region_eastern"/>
+    </record>
+    <record id="city_dhahran" model="construction.saudi.city">
+        <field name="name">Dhahran</field>
+        <field name="name_ar">الظهران</field>
+        <field name="region_id" ref="region_eastern"/>
+    </record>
+    <record id="city_jubail" model="construction.saudi.city">
+        <field name="name">Jubail</field>
+        <field name="name_ar">الجبيل</field>
+        <field name="region_id" ref="region_eastern"/>
+    </record>
+    <record id="city_hofuf" model="construction.saudi.city">
+        <field name="name">Al-Hofuf</field>
+        <field name="name_ar">الهفوف</field>
+        <field name="region_id" ref="region_eastern"/>
+    </record>
+    <record id="city_qatif" model="construction.saudi.city">
+        <field name="name">Qatif</field>
+        <field name="name_ar">القطيف</field>
+        <field name="region_id" ref="region_eastern"/>
+    </record>
+    <record id="city_hafar_batin" model="construction.saudi.city">
+        <field name="name">Hafar Al-Batin</field>
+        <field name="name_ar">حفر الباطن</field>
+        <field name="region_id" ref="region_eastern"/>
+    </record>
+
+    <!-- Asir Region -->
+    <record id="city_abha" model="construction.saudi.city">
+        <field name="name">Abha</field>
+        <field name="name_ar">أبها</field>
+        <field name="region_id" ref="region_asir"/>
+    </record>
+    <record id="city_khamis_mushait" model="construction.saudi.city">
+        <field name="name">Khamis Mushait</field>
+        <field name="name_ar">خميس مشيط</field>
+        <field name="region_id" ref="region_asir"/>
+    </record>
+    <record id="city_bisha" model="construction.saudi.city">
+        <field name="name">Bisha</field>
+        <field name="name_ar">بيشة</field>
+        <field name="region_id" ref="region_asir"/>
+    </record>
+    <record id="city_muhayil" model="construction.saudi.city">
+        <field name="name">Muhayil Asir</field>
+        <field name="name_ar">محايل عسير</field>
+        <field name="region_id" ref="region_asir"/>
+    </record>
+
+    <!-- Jizan Region -->
+    <record id="city_jizan" model="construction.saudi.city">
+        <field name="name">Jizan</field>
+        <field name="name_ar">جازان</field>
+        <field name="region_id" ref="region_jizan"/>
+    </record>
+    <record id="city_sabya" model="construction.saudi.city">
+        <field name="name">Sabya</field>
+        <field name="name_ar">صبيا</field>
+        <field name="region_id" ref="region_jizan"/>
+    </record>
+    <record id="city_abu_arish" model="construction.saudi.city">
+        <field name="name">Abu Arish</field>
+        <field name="name_ar">أبو عريش</field>
+        <field name="region_id" ref="region_jizan"/>
+    </record>
+
+    <!-- Najran Region -->
+    <record id="city_najran" model="construction.saudi.city">
+        <field name="name">Najran</field>
+        <field name="name_ar">نجران</field>
+        <field name="region_id" ref="region_najran"/>
+    </record>
+    <record id="city_sharurah" model="construction.saudi.city">
+        <field name="name">Sharurah</field>
+        <field name="name_ar">شرورة</field>
+        <field name="region_id" ref="region_najran"/>
+    </record>
+
+    <!-- Al-Bahah Region -->
+    <record id="city_bahah" model="construction.saudi.city">
+        <field name="name">Al-Bahah</field>
+        <field name="name_ar">الباحة</field>
+        <field name="region_id" ref="region_bahah"/>
+    </record>
+    <record id="city_baljurashi" model="construction.saudi.city">
+        <field name="name">Baljurashi</field>
+        <field name="name_ar">بلجرشي</field>
+        <field name="region_id" ref="region_bahah"/>
+    </record>
+
+    <!-- Tabuk Region -->
+    <record id="city_tabuk" model="construction.saudi.city">
+        <field name="name">Tabuk</field>
+        <field name="name_ar">تبوك</field>
+        <field name="region_id" ref="region_tabuk"/>
+    </record>
+    <record id="city_wajh" model="construction.saudi.city">
+        <field name="name">Al-Wajh</field>
+        <field name="name_ar">الوجه</field>
+        <field name="region_id" ref="region_tabuk"/>
+    </record>
+    <record id="city_umluj" model="construction.saudi.city">
+        <field name="name">Umluj</field>
+        <field name="name_ar">أملج</field>
+        <field name="region_id" ref="region_tabuk"/>
+    </record>
+    <record id="city_duba" model="construction.saudi.city">
+        <field name="name">Duba</field>
+        <field name="name_ar">ضبا</field>
+        <field name="region_id" ref="region_tabuk"/>
+    </record>
+    <record id="city_haql" model="construction.saudi.city">
+        <field name="name">Haql</field>
+        <field name="name_ar">حقل</field>
+        <field name="region_id" ref="region_tabuk"/>
+    </record>
+
+    <!-- Northern Borders Region -->
+    <record id="city_arar" model="construction.saudi.city">
+        <field name="name">Arar</field>
+        <field name="name_ar">عرعر</field>
+        <field name="region_id" ref="region_northern"/>
+    </record>
+    <record id="city_rafha" model="construction.saudi.city">
+        <field name="name">Rafha</field>
+        <field name="name_ar">رفحاء</field>
+        <field name="region_id" ref="region_northern"/>
+    </record>
+    <record id="city_turaif" model="construction.saudi.city">
+        <field name="name">Turaif</field>
+        <field name="name_ar">طريف</field>
+        <field name="region_id" ref="region_northern"/>
+    </record>
+
+    <!-- Al-Jouf Region -->
+    <record id="city_sakaka" model="construction.saudi.city">
+        <field name="name">Sakaka</field>
+        <field name="name_ar">سكاكا</field>
+        <field name="region_id" ref="region_jouf"/>
+    </record>
+    <record id="city_domat_jandal" model="construction.saudi.city">
+        <field name="name">Domat Al-Jandal</field>
+        <field name="name_ar">دومة الجندل</field>
+        <field name="region_id" ref="region_jouf"/>
+    </record>
+    <record id="city_qurayyat" model="construction.saudi.city">
+        <field name="name">Al-Qurayyat</field>
+        <field name="name_ar">القريات</field>
+        <field name="region_id" ref="region_jouf"/>
+    </record>
+
+    <!-- Hail Region -->
+    <record id="city_hail" model="construction.saudi.city">
+        <field name="name">Hail</field>
+        <field name="name_ar">حائل</field>
+        <field name="region_id" ref="region_hail"/>
+    </record>
+    <record id="city_baqaa" model="construction.saudi.city">
+        <field name="name">Baqaa</field>
+        <field name="name_ar">بقعاء</field>
+        <field name="region_id" ref="region_hail"/>
+    </record>
+
+    <!-- Qassim Region -->
+    <record id="city_buraidah" model="construction.saudi.city">
+        <field name="name">Buraidah</field>
+        <field name="name_ar">بريدة</field>
+        <field name="region_id" ref="region_qassim"/>
+    </record>
+    <record id="city_unaizah" model="construction.saudi.city">
+        <field name="name">Unaizah</field>
+        <field name="name_ar">عنيزة</field>
+        <field name="region_id" ref="region_qassim"/>
+    </record>
+    <record id="city_rass" model="construction.saudi.city">
+        <field name="name">Al-Rass</field>
+        <field name="name_ar">الرس</field>
+        <field name="region_id" ref="region_qassim"/>
+    </record>
+    <record id="city_mithnab" model="construction.saudi.city">
+        <field name="name">Al-Mithnab</field>
+        <field name="name_ar">المذنب</field>
+        <field name="region_id" ref="region_qassim"/>
+    </record>
+
+</data>
+</odoo>

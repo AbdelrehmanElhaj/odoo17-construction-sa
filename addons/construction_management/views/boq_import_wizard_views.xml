@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_boq_import_wizard_form" model="ir.ui.view">
+        <field name="name">construction.boq.import.form</field>
+        <field name="model">construction.boq.import</field>
+        <field name="arch" type="xml">
+            <form string="استيراد BOQ من Excel">
+                <sheet>
+                    <group string="استيراد بنود BOQ">
+                        <field name="boq_id" readonly="1"/>
+                        <field name="file_data" filename="file_name"
+                               widget="binary"
+                               string="ملف Excel أو CSV"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                    <group string="نتيجة الاستيراد" invisible="not import_result">
+                        <field name="import_result" nolabel="1"/>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>تعليمات الاستيراد:</strong>
+                        <ul class="mb-0 mt-1">
+                            <li>حمّل القالب أولاً بالضغط على "تنزيل القالب"</li>
+                            <li>أعمدة مطلوبة: <code>description</code> (الوصف الإنجليزي)</li>
+                            <li>نوع البند (item_type): material, labor, equipment, subcontract, overhead</li>
+                            <li>يدعم ملفات Excel (.xlsx) وCSV</li>
+                        </ul>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_import" string="استيراد" type="object"
+                            class="btn-primary" invisible="not file_data"/>
+                    <button name="action_download_template" string="تنزيل القالب"
+                            type="object" class="btn-secondary"/>
+                    <button string="إغلاق" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

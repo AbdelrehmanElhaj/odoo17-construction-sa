@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CERTIFICATE FORM VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_certificate_form" model="ir.ui.view">
+        <field name="name">construction.certificate.form</field>
+        <field name="model">construction.certificate</field>
+        <field name="arch" type="xml">
+            <form string="مستخلص التقدم">
+
+                <header>
+                    <button name="action_submit_review" string="تقديم للمراجعة"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" string="اعتماد المستخلص"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'review'"/>
+                    <button name="action_mark_paid" string="تسجيل الدفع"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'approved'"/>
+                    <button name="action_reject" string="رفض / إعادة للمسودة"
+                            type="object"
+                            invisible="state not in ('review', 'approved')"/>
+                    <button name="action_reset_draft" string="إعادة للمسودة"
+                            type="object"
+                            invisible="state != 'paid'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,review,approved,paid"/>
+                </header>
+
+                <sheet>
+
+                    <!-- Title -->
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="عنوان المستخلص"/>
+                        </h1>
+                        <div>
+                            <field name="certificate_code" class="oe_inline text-muted"/>
+                            <span class="mx-2 text-muted">|</span>
+                            <span class="text-muted">مستخلص رقم </span>
+                            <field name="certificate_number" class="oe_inline"/>
+                        </div>
+                    </div>
+
+                    <!-- Main info -->
+                    <group>
+                        <group string="معلومات المستخلص">
+                            <field name="project_id"/>
+                            <field name="contract_id"/>
+                            <field name="payment_line_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="سير الاعتماد">
+                            <field name="date_submitted" readonly="1"/>
+                            <field name="reviewed_by"    readonly="1"/>
+                            <field name="date_approved"  readonly="1"/>
+                            <field name="approved_by"    widget="many2one_avatar_user"
+                                   readonly="1"/>
+                            <field name="date_paid"      readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Financial summary -->
+                    <group string="الملخص المالي">
+                        <group string="الإجماليات">
+                            <field name="currency_id"/>
+                            <field name="amount_gross"     readonly="1"/>
+                            <field name="retention_percent"/>
+                            <field name="retention_amount" readonly="1"/>
+                        </group>
+                        <group string="الخصومات والصافي">
+                            <field name="advance_deduction"/>
+                            <field name="amount_net" readonly="1"
+                                   class="fw-bold text-success"/>
+                            <field name="vat_rate"/>
+                            <field name="vat_amount"      readonly="1"/>
+                            <field name="amount_with_vat" readonly="1"
+                                   class="fw-bold"/>
+                        </group>
+                    </group>
+
+                    <!-- ZATCA QR Code -->
+                    <group string="ZATCA QR Code — رمز الاستجابة السريعة">
+                        <group>
+                            <field name="zatca_qr_code" widget="image"
+                                   readonly="1"
+                                   style="max-width: 150px; max-height: 150px;"
+                                   invisible="not zatca_qr_code"/>
+                            <span invisible="zatca_qr_code"
+                                  style="color: #aaa; font-size: 12px;">
+                                يُولَّد عند الاعتماد أو التقديم
+                            </span>
+                        </group>
+                        <group>
+                            <div style="font-size: 11px; color: #666; line-height: 1.6;">
+                                <strong>ZATCA Phase 1</strong><br/>
+                                يتضمن: اسم المورد، الرقم الضريبي، التاريخ، الإجمالي، الضريبة<br/>
+                                <em>Includes: Seller, VAT No., Date, Total, Tax</em>
+                            </div>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- Tab 1: Certificate Lines -->
+                        <page string="البنود | Items" name="lines">
+                            <field name="line_ids"
+                                   invisible="state in ('approved', 'paid')"
+                                   mode="tree">
+                                <tree string="بنود المستخلص" editable="bottom"
+                                      decoration-info="percent_complete == 100">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="boq_line_id"
+                                           domain="[('boq_id.project_id', '=', parent.project_id)]"
+                                           optional="show"/>
+                                    <field name="item_code"   optional="show"/>
+                                    <field name="description"/>
+                                    <field name="item_type"   optional="show"/>
+                                    <field name="uom_id"/>
+                                    <field name="qty_boq"      readonly="1" optional="show"/>
+                                    <field name="qty_previous" optional="show"/>
+                                    <field name="qty_this"/>
+                                    <field name="qty_total"    readonly="1"/>
+                                    <field name="percent_complete" widget="progressbar"
+                                           readonly="1" optional="show"/>
+                                    <field name="unit_price"/>
+                                    <field name="amount_previous" readonly="1" optional="show"/>
+                                    <field name="amount_this"     readonly="1"
+                                           sum="إجمالي هذا المستخلص"/>
+                                    <field name="amount_total"    readonly="1" optional="show"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <!-- Read-only after approval -->
+                            <field name="line_ids"
+                                   invisible="state not in ('approved', 'paid')"
+                                   mode="tree">
+                                <tree string="بنود المستخلص"
+                                      decoration-info="percent_complete == 100">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="item_code"   optional="show"/>
+                                    <field name="description"/>
+                                    <field name="item_type"   optional="show"/>
+                                    <field name="uom_id"/>
+                                    <field name="qty_boq"      optional="show"/>
+                                    <field name="qty_previous" optional="show"/>
+                                    <field name="qty_this"/>
+                                    <field name="qty_total"/>
+                                    <field name="percent_complete" widget="progressbar"
+                                           optional="show"/>
+                                    <field name="unit_price"/>
+                                    <field name="amount_previous" optional="show"/>
+                                    <field name="amount_this" sum="إجمالي هذا المستخلص"/>
+                                    <field name="amount_total" optional="show"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- Tab 2: Description / Notes -->
+                        <page string="وصف ومستندات | Description" name="description">
+                            <field name="description"/>
+                            <group>
+                                <field name="notes"/>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CERTIFICATE LIST VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_certificate_list" model="ir.ui.view">
+        <field name="name">construction.certificate.list</field>
+        <field name="model">construction.certificate</field>
+        <field name="arch" type="xml">
+            <tree string="المستخلصات"
+                  decoration-success="state == 'paid'"
+                  decoration-info="state == 'approved'"
+                  decoration-warning="state == 'review'"
+                  decoration-muted="state == 'draft'">
+                <field name="certificate_code" optional="show"/>
+                <field name="certificate_number" string="#"/>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="contract_id" optional="show"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="amount_gross"     optional="show"/>
+                <field name="retention_amount" optional="show"/>
+                <field name="advance_deduction" optional="hide"/>
+                <field name="amount_net" sum="إجمالي الصافي"/>
+                <field name="date_approved"    optional="show"/>
+                <field name="approved_by"      optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'paid'"
+                       decoration-info="state == 'approved'"
+                       decoration-warning="state == 'review'"
+                       decoration-muted="state == 'draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CERTIFICATE SEARCH VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_certificate_search" model="ir.ui.view">
+        <field name="name">construction.certificate.search</field>
+        <field name="model">construction.certificate</field>
+        <field name="arch" type="xml">
+            <search string="بحث في المستخلصات">
+                <field name="name"             string="العنوان"/>
+                <field name="certificate_code" string="الرقم"/>
+                <field name="project_id"       string="المشروع"/>
+                <field name="contract_id"      string="العقد"/>
+                <separator/>
+                <filter string="مسودة"         name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="قيد المراجعة"  name="review"
+                        domain="[('state', '=', 'review')]"/>
+                <filter string="معتمد"         name="approved"
+                        domain="[('state', '=', 'approved')]"/>
+                <filter string="مدفوع"         name="paid"
+                        domain="[('state', '=', 'paid')]"/>
+                <separator/>
+                <filter string="بانتظار الاعتماد" name="pending_approval"
+                        domain="[('state', 'in', ['draft', 'review'])]"/>
+                <group expand="0" string="تجميع بـ">
+                    <filter string="المشروع"  name="group_project"
+                            context="{'group_by': 'project_id'}"/>
+                    <filter string="العقد"    name="group_contract"
+                            context="{'group_by': 'contract_id'}"/>
+                    <filter string="الحالة"   name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="السنة"    name="group_year"
+                            context="{'group_by': 'date_to:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         WINDOW ACTIONS
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="action_construction_certificate" model="ir.actions.act_window">
+        <field name="name">المستخلصات | Progress Certificates</field>
+        <field name="res_model">construction.certificate</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_construction_certificate_search"/>
+        <field name="context">{'search_default_pending_approval': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">أنشئ مستخلص تقدم</p>
+            <p>سجّل كميات الأعمال المنجزة وأرسلها للاعتماد.</p>
+        </field>
+    </record>
+
+    <record id="action_construction_certificate_from_project" model="ir.actions.act_window">
+        <field name="name">المستخلصات | Certificates</field>
+        <field name="res_model">construction.certificate</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_construction_certificate_search"/>
+        <field name="context">{'default_project_id': active_id}</field>
+        <field name="domain">[('project_id', '=', active_id)]</field>
+    </record>
+
+</odoo>

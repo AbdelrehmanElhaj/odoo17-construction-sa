@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Extend res.partner form — Saudi Info tab  (Odoo 17 syntax)
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_partner_form_saudi_info" model="ir.ui.view">
+        <field name="name">res.partner.form.saudi.info</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <notebook position="inside">
+                <page string="المعلومات السعودية" name="saudi_info">
+
+                    <!-- Saudi Identity -->
+                    <group string="الهوية السعودية | Saudi Identity">
+                        <group>
+                            <field name="saudi_id_type"/>
+                            <field name="saudi_id_number"
+                                   required="saudi_id_type"
+                                   placeholder="رقم الهوية"/>
+                            <field name="saudi_id_expiry"/>
+                        </group>
+                        <group>
+                            <field name="saudi_id_status"
+                                   widget="badge"
+                                   decoration-success="saudi_id_status == 'valid'"
+                                   decoration-warning="saudi_id_status == 'expiring'"
+                                   decoration-danger="saudi_id_status == 'expired'"
+                                   invisible="not saudi_id_expiry"/>
+                        </group>
+                    </group>
+
+                    <!-- Saudi Phone Numbers -->
+                    <group string="أرقام الهاتف السعودية | Saudi Phones">
+                        <group>
+                            <field name="mobile_sa"
+                                   placeholder="05XXXXXXXX أو +9665XXXXXXXX"/>
+                            <field name="phone_work_sa"
+                                   placeholder="01XXXXXXXX"/>
+                        </group>
+                        <group>
+                            <field name="whatsapp_sa"
+                                   placeholder="+9665XXXXXXXX"/>
+                        </group>
+                    </group>
+
+                    <!-- National Address -->
+                    <group string="العنوان الوطني | National Address (Saudi Post)">
+                        <group>
+                            <field name="sa_building_no"  placeholder="مثال: 3542"/>
+                            <field name="sa_street_name"  placeholder="اسم الشارع"/>
+                            <field name="sa_secondary_no" placeholder="مثال: 7894"/>
+                            <field name="sa_district"     placeholder="اسم الحي"/>
+                        </group>
+                        <group>
+                            <field name="sa_city_id"/>
+                            <field name="sa_region_id"/>
+                            <field name="sa_postal_code"  placeholder="مثال: 12212"/>
+                            <field name="sa_national_address" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Contractor Toggle -->
+                    <group>
+                        <field name="is_contractor"/>
+                    </group>
+
+                    <!-- Contractor Details -->
+                    <group string="بيانات المقاول | Contractor Info"
+                           invisible="not is_contractor">
+                        <group>
+                            <field name="commercial_registration" placeholder="10 أرقام"/>
+                            <field name="contractor_grade"/>
+                            <field name="contractor_type"/>
+                        </group>
+                        <group>
+                            <field name="contractor_license"/>
+                            <field name="license_expiry"/>
+                            <field name="retention_percent" string="نسبة الضمان المحتجز %"/>
+                        </group>
+                    </group>
+
+                </page>
+            </notebook>
+
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Add Contractors filter to Contacts search
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_partner_filter_contractor" model="ir.ui.view">
+        <field name="name">res.partner.filter.contractor</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="type_company" position="after">
+                <separator/>
+                <filter string="المقاولون | Contractors"
+                        name="contractors"
+                        domain="[('is_contractor', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

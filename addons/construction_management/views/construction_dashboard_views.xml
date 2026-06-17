@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FORM VIEW — Dashboard
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_construction_dashboard_form" model="ir.ui.view">
+        <field name="name">construction.dashboard.form</field>
+        <field name="model">construction.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="لوحة المتابعة" create="false" edit="false" delete="false">
+                <sheet>
+                    <!-- invisible fields consumed by inline expressions -->
+                    <field name="currency_symbol" invisible="1"/>
+                    <field name="total_contract_value" invisible="1"/>
+                    <field name="total_certified" invisible="1"/>
+                    <field name="total_paid" invisible="1"/>
+                    <field name="total_balance_due" invisible="1"/>
+                    <field name="count_cert_approved" invisible="1"/>
+                    <field name="count_cert_review" invisible="1"/>
+
+                    <div style="direction: rtl; font-family: Tahoma, Arial, sans-serif; padding: 16px 0;">
+
+                        <!-- ── Header ───────────────────────────────────── -->
+                        <div style="text-align: center; margin-bottom: 28px; padding-bottom: 14px; border-bottom: 3px solid #1F4E79;">
+                            <h2 style="color: #1F4E79; margin: 0 0 4px 0;">لوحة متابعة المقاولات</h2>
+                            <p style="color: #888; margin: 0; font-size: 13px;">Construction Management Dashboard</p>
+                        </div>
+
+                        <!-- ── Row 1: Project KPIs ─────────────────────── -->
+                        <h5 style="color: #1F4E79; margin: 0 0 10px 6px; padding-right: 8px; border-right: 4px solid #1F4E79;">
+                            المشاريع | Projects
+                        </h5>
+                        <div class="row mb-4">
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: #1F4E79; color: white; padding: 22px 16px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                    <div style="font-size: 42px; font-weight: 700; line-height: 1;">
+                                        <field name="count_projects_all" readonly="1"/>
+                                    </div>
+                                    <div style="font-size: 13px; margin-top: 6px; opacity: 0.9;">إجمالي المشاريع</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: #27ae60; color: white; padding: 22px 16px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                    <div style="font-size: 42px; font-weight: 700; line-height: 1;">
+                                        <field name="count_projects_active" readonly="1"/>
+                                    </div>
+                                    <div style="font-size: 13px; margin-top: 6px; opacity: 0.9;">مشاريع نشطة</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: #2980b9; color: white; padding: 22px 16px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                    <div style="font-size: 42px; font-weight: 700; line-height: 1;">
+                                        <field name="count_projects_done" readonly="1"/>
+                                    </div>
+                                    <div style="font-size: 13px; margin-top: 6px; opacity: 0.9;">مشاريع مكتملة</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: #c0392b; color: white; padding: 22px 16px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                    <div style="font-size: 42px; font-weight: 700; line-height: 1;">
+                                        <field name="count_projects_delayed" readonly="1"/>
+                                    </div>
+                                    <div style="font-size: 13px; margin-top: 6px; opacity: 0.9;">مشاريع متأخرة</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Row 2: Financial KPIs ───────────────────── -->
+                        <h5 style="color: #1F4E79; margin: 0 0 10px 6px; padding-right: 8px; border-right: 4px solid #1F4E79;">
+                            الملخص المالي | Financial Summary
+                        </h5>
+                        <div class="row mb-4">
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: white; border: 2px solid #1F4E79; padding: 18px 14px; border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 11px; color: #888; margin-bottom: 4px;">إجمالي قيمة العقود</div>
+                                    <div style="font-size: 18px; font-weight: 700; color: #1F4E79; font-family: monospace;">
+                                        <field name="total_contract_value" readonly="1" widget="float" options="{'digits': [18, 0]}"/>
+                                    </div>
+                                    <div style="font-size: 10px; color: #aaa; margin-top: 2px;">
+                                        <field name="currency_symbol" readonly="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: white; border: 2px solid #27ae60; padding: 18px 14px; border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 11px; color: #888; margin-bottom: 4px;">إجمالي المستخلصات المعتمدة</div>
+                                    <div style="font-size: 18px; font-weight: 700; color: #27ae60; font-family: monospace;">
+                                        <field name="total_certified" readonly="1" widget="float" options="{'digits': [18, 0]}"/>
+                                    </div>
+                                    <div style="font-size: 10px; color: #aaa; margin-top: 2px;">
+                                        <field name="currency_symbol" readonly="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: white; border: 2px solid #2980b9; padding: 18px 14px; border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 11px; color: #888; margin-bottom: 4px;">إجمالي المدفوعات</div>
+                                    <div style="font-size: 18px; font-weight: 700; color: #2980b9; font-family: monospace;">
+                                        <field name="total_paid" readonly="1" widget="float" options="{'digits': [18, 0]}"/>
+                                    </div>
+                                    <div style="font-size: 10px; color: #aaa; margin-top: 2px;">
+                                        <field name="currency_symbol" readonly="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div style="background: white; border: 2px solid #e67e22; padding: 18px 14px; border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 11px; color: #888; margin-bottom: 4px;">مستحقات غير مدفوعة</div>
+                                    <div style="font-size: 18px; font-weight: 700; color: #e67e22; font-family: monospace;">
+                                        <field name="total_balance_due" readonly="1" widget="float" options="{'digits': [18, 0]}"/>
+                                    </div>
+                                    <div style="font-size: 10px; color: #aaa; margin-top: 2px;">
+                                        <field name="currency_symbol" readonly="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Row 3: Certificate + Payment KPIs ─────── -->
+                        <div class="row mb-4">
+                            <!-- Certificates status card -->
+                            <div class="col-md-6 mb-3">
+                                <div style="background: white; border: 1px solid #ddd; border-radius: 10px; padding: 18px; height: 100%;">
+                                    <h6 style="color: #1F4E79; margin: 0 0 14px 0; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+                                        حالة المستخلصات | Certificate Status
+                                    </h6>
+                                    <div class="row text-center">
+                                        <div class="col-3">
+                                            <div style="background: #f8f9fa; border-radius: 8px; padding: 12px 6px;">
+                                                <div style="font-size: 28px; font-weight: 700; color: #888;">
+                                                    <field name="count_cert_draft" readonly="1"/>
+                                                </div>
+                                                <div style="font-size: 10px; color: #aaa;">مسودة</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div style="background: #fff8e1; border-radius: 8px; padding: 12px 6px;">
+                                                <div style="font-size: 28px; font-weight: 700; color: #e67e22;">
+                                                    <field name="count_cert_review" readonly="1"/>
+                                                </div>
+                                                <div style="font-size: 10px; color: #e67e22;">مراجعة</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div style="background: #e8f5e9; border-radius: 8px; padding: 12px 6px;">
+                                                <div style="font-size: 28px; font-weight: 700; color: #27ae60;">
+                                                    <field name="count_cert_approved" readonly="1"/>
+                                                </div>
+                                                <div style="font-size: 10px; color: #27ae60;">معتمدة</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div style="background: #e3f2fd; border-radius: 8px; padding: 12px 6px;">
+                                                <div style="font-size: 28px; font-weight: 700; color: #2980b9;">
+                                                    <field name="count_cert_paid" readonly="1"/>
+                                                </div>
+                                                <div style="font-size: 10px; color: #2980b9;">مدفوعة</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Payments status card -->
+                            <div class="col-md-6 mb-3">
+                                <div style="background: white; border: 1px solid #ddd; border-radius: 10px; padding: 18px; height: 100%;">
+                                    <h6 style="color: #1F4E79; margin: 0 0 14px 0; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+                                        حالة الدفعات | Payment Status
+                                    </h6>
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div style="background: #fff8e1; border-radius: 8px; padding: 18px 12px;">
+                                                <div style="font-size: 38px; font-weight: 700; color: #e67e22;">
+                                                    <field name="count_payment_due" readonly="1"/>
+                                                </div>
+                                                <div style="font-size: 12px; color: #e67e22; margin-top: 4px;">دفعات مستحقة</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div style="background: #fce4ec; border-radius: 8px; padding: 18px 12px;">
+                                                <div style="font-size: 38px; font-weight: 700; color: #c0392b;">
+                                                    <field name="count_payment_overdue" readonly="1"/>
+                                                </div>
+                                                <div style="font-size: 12px; color: #c0392b; margin-top: 4px;">دفعات متأخرة</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         ACTION — opens the singleton dashboard record
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="action_construction_dashboard" model="ir.actions.act_window">
+        <field name="name">لوحة المتابعة | Dashboard</field>
+        <field name="res_model">construction.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_construction_dashboard_form"/>
+        <field name="context">{'create': False, 'delete': False}</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SERVER ACTION — ensures singleton exists before opening
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="action_open_dashboard_server" model="ir.actions.server">
+        <field name="name">فتح لوحة المتابعة</field>
+        <field name="model_id" ref="model_construction_dashboard"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open()</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PAPER FORMAT — A4 Landscape for wide tables
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="paperformat_construction_landscape" model="report.paperformat">
+        <field name="name">Construction A4 Landscape</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">10</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         REPORT ACTION
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="action_report_certificate" model="ir.actions.report">
+        <field name="name">طباعة المستخلص | Print Certificate</field>
+        <field name="model">construction.certificate</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">construction_management.report_certificate_document</field>
+        <field name="report_file">construction_management.report_certificate</field>
+        <field name="print_report_name">'مستخلص_' + (object.certificate_code or object.name or 'certificate')</field>
+        <field name="paperformat_id" ref="paperformat_construction_landscape"/>
+        <field name="binding_model_id" ref="model_construction_certificate"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         QWEB TEMPLATE
+    ═══════════════════════════════════════════════════════════ -->
+    <template id="report_certificate_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page" style="direction: rtl; font-family: Tahoma, Arial, sans-serif; font-size: 10px;">
+
+                        <!-- TITLE ─────────────────────────────────────── -->
+                        <div style="text-align: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 3px solid #1F4E79;">
+                            <h3 style="color: #1F4E79; margin: 0 0 4px 0; font-size: 16px;">
+                                مستخلص التقدم — Progress Certificate
+                            </h3>
+                            <h5 style="color: #444; margin: 0; font-size: 12px;">
+                                <span t-field="doc.certificate_code"/>
+                                &amp;nbsp;|&amp;nbsp;
+                                المستخلص رقم: <span t-field="doc.certificate_number"/>
+                                &amp;nbsp;|&amp;nbsp;
+                                <t t-if="doc.state == 'draft'"><span style="color:#888;">مسودة</span></t>
+                                <t t-elif="doc.state == 'review'"><span style="color:#e67e22;">قيد المراجعة</span></t>
+                                <t t-elif="doc.state == 'approved'"><span style="color:#27ae60;">معتمد</span></t>
+                                <t t-elif="doc.state == 'paid'"><span style="color:#2980b9;">مدفوع</span></t>
+                            </h5>
+                        </div>
+
+                        <!-- INFO GRID ─────────────────────────────────── -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px;">
+                            <tr>
+                                <!-- Left column: project info -->
+                                <td style="width: 50%; vertical-align: top; padding-left: 10px;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc; width: 38%;">المشروع</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;"><span t-field="doc.project_id"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">العقد</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;">
+                                                <t t-esc="doc.contract_id.name if doc.contract_id else '—'"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">المقاول</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;">
+                                                <t t-esc="doc.contract_id.partner_id.name if (doc.contract_id and doc.contract_id.partner_id) else '—'"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">المهندس</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;">
+                                                <t t-esc="doc.contract_id.engineer_id.name if (doc.contract_id and doc.contract_id.engineer_id) else '—'"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <!-- Right column: dates -->
+                                <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc; width: 42%;">فترة المستخلص</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;">
+                                                <span t-field="doc.date_from"/>
+                                                <t t-if="doc.date_to"> — <span t-field="doc.date_to"/></t>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">تاريخ التقديم</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;"><span t-field="doc.date_submitted"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">تاريخ الاعتماد</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;"><span t-field="doc.date_approved"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: bold; background: #eef3fb; padding: 4px 8px; border: 1px solid #ccc;">معتمد من</td>
+                                            <td style="padding: 4px 8px; border: 1px solid #ccc;">
+                                                <t t-esc="doc.approved_by.name if doc.approved_by else '—'"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- LINES TABLE ───────────────────────────────── -->
+                        <h5 style="color: #1F4E79; margin: 0 0 6px 0; padding-right: 6px; border-right: 4px solid #1F4E79; font-size: 11px;">
+                            بنود المستخلص
+                        </h5>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 14px;">
+                            <thead>
+                                <tr style="background-color: #1F4E79; color: white; text-align: center;">
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 3%;">#</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 6%;">الكود</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 18%;">الوصف</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 5%;">الوحدة</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 7%;">ك. BOQ</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 7%;">ك. سابقة</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 7%;">ك. هذا المستخلص</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 7%;">إجمالي الكمية</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 6%;">% إنجاز</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 9%;">سعر الوحدة</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 10%;">مبلغ سابق</th>
+                                    <th style="padding: 5px 3px; border: 1px solid #ccc; width: 10%; background-color: #2d6a9f;">مبلغ هذا المستخلص</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc.line_ids" t-as="line">
+                                    <tr t-att-style="'background-color:' + ('#f7f9fc' if line_odd else '#ffffff') + ';'">
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center;"><t t-esc="line_index + 1"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center;"><t t-esc="line.item_code or ''"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: right;"><span t-field="line.description"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center;"><t t-esc="line.uom_id.name if line.uom_id else ''"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'%.3f' % line.qty_boq if line.qty_boq else '—'"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'%.3f' % line.qty_previous"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left; font-weight: bold;"><t t-esc="'%.3f' % line.qty_this"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'%.3f' % line.qty_total"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: center;"><t t-esc="'%.1f' % line.percent_complete"/>%</td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'{:,.2f}'.format(line.unit_price)"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left;"><t t-esc="'{:,.2f}'.format(line.amount_previous)"/></td>
+                                        <td style="padding: 3px; border: 1px solid #ddd; text-align: left; font-weight: bold; background-color: #e8f4e8;"><t t-esc="'{:,.2f}'.format(line.amount_this)"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color: #1F4E79; color: white; font-weight: bold;">
+                                    <td colspan="11" style="padding: 5px 8px; border: 1px solid #ccc; text-align: right; font-size: 10px;">
+                                        الإجمالي قبل الخصومات:
+                                    </td>
+                                    <td style="padding: 5px 8px; border: 1px solid #ccc; text-align: left; font-size: 11px;">
+                                        <t t-esc="'{:,.2f}'.format(doc.amount_gross)"/>
+                                        <t t-esc="' ' + (doc.currency_id.name or '')"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- FINANCIAL SUMMARY ─────────────────────────── -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <tr>
+                                <td style="width: 55%;"></td>
+                                <td style="width: 45%; vertical-align: top;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                                        <tr>
+                                            <td style="padding: 5px 10px; background: #eef3fb; font-weight: bold; border: 1px solid #ccc; text-align: right;">
+                                                الإجمالي قبل الخصومات
+                                            </td>
+                                            <td style="padding: 5px 10px; border: 1px solid #ccc; text-align: left; font-family: monospace;">
+                                                <t t-esc="'{:,.2f}'.format(doc.amount_gross)"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 10px; background: #eef3fb; font-weight: bold; border: 1px solid #ccc; text-align: right;">
+                                                خصم الضمان (<t t-esc="'%.1f' % doc.retention_percent"/>%)
+                                            </td>
+                                            <td style="padding: 5px 10px; border: 1px solid #ccc; text-align: left; color: #c0392b; font-family: monospace;">
+                                                (<t t-esc="'{:,.2f}'.format(doc.retention_amount)"/>)
+                                            </td>
+                                        </tr>
+                                        <tr t-if="doc.advance_deduction">
+                                            <td style="padding: 5px 10px; background: #eef3fb; font-weight: bold; border: 1px solid #ccc; text-align: right;">
+                                                خصم الدفعة المقدمة
+                                            </td>
+                                            <td style="padding: 5px 10px; border: 1px solid #ccc; text-align: left; color: #c0392b; font-family: monospace;">
+                                                (<t t-esc="'{:,.2f}'.format(doc.advance_deduction)"/>)
+                                            </td>
+                                        </tr>
+                                        <tr style="background-color: #1F4E79; color: white;">
+                                            <td style="padding: 7px 10px; border: 1px solid #ccc; font-weight: bold; font-size: 12px; text-align: right;">
+                                                صافي المستخلص
+                                            </td>
+                                            <td style="padding: 7px 10px; border: 1px solid #ccc; font-weight: bold; font-size: 12px; text-align: left; font-family: monospace;">
+                                                <t t-esc="'{:,.2f}'.format(doc.amount_net)"/>
+                                                <t t-esc="' ' + (doc.currency_id.name or '')"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 5px 10px; background: #eef3fb; font-weight: bold; border: 1px solid #ccc; text-align: right;">
+                                                ضريبة القيمة المضافة (<t t-esc="'%.0f' % doc.vat_rate"/>%)
+                                            </td>
+                                            <td style="padding: 5px 10px; border: 1px solid #ccc; text-align: left; font-family: monospace;">
+                                                <t t-esc="'{:,.2f}'.format(doc.vat_amount)"/>
+                                            </td>
+                                        </tr>
+                                        <tr style="background-color: #155a32; color: white;">
+                                            <td style="padding: 7px 10px; border: 1px solid #ccc; font-weight: bold; font-size: 12px; text-align: right;">
+                                                الإجمالي شامل الضريبة
+                                            </td>
+                                            <td style="padding: 7px 10px; border: 1px solid #ccc; font-weight: bold; font-size: 12px; text-align: left; font-family: monospace;">
+                                                <t t-esc="'{:,.2f}'.format(doc.amount_with_vat)"/>
+                                                <t t-esc="' ' + (doc.currency_id.name or '')"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ZATCA QR ──────────────────────────────────── -->
+                        <t t-if="doc.zatca_qr_code">
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px;">
+                                <tr>
+                                    <td style="vertical-align: top; padding-left: 8px; color: #666;">
+                                        <strong style="font-size: 10px;">ZATCA Phase 1 QR Code</strong><br/>
+                                        رمز الاستجابة السريعة — هيئة الزكاة والضريبة والجمارك<br/>
+                                        يمكن مسح الرمز للتحقق من صحة المستخلص
+                                    </td>
+                                    <td style="text-align: left; padding-right: 8px; width: 90px;">
+                                        <img t-att-src="'data:image/png;base64,' + (doc.zatca_qr_code or '')"
+                                             style="width: 80px; height: 80px; border: 1px solid #eee;"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </t>
+
+                        <!-- SIGNATURE BLOCKS ──────────────────────────── -->
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 40px; page-break-inside: avoid;">
+                            <tr>
+                                <td style="width: 33%; text-align: center; padding: 8px 15px; vertical-align: bottom;">
+                                    <div style="border-top: 1px solid #333; padding-top: 6px; margin-top: 55px;">
+                                        <strong style="font-size: 11px;">المقاول / المقاولة</strong><br/>
+                                        <small style="color: #666; font-size: 9px;">
+                                            <t t-esc="doc.contract_id.partner_id.name if (doc.contract_id and doc.contract_id.partner_id) else '..............................'"/>
+                                        </small>
+                                    </div>
+                                </td>
+                                <td style="width: 34%; text-align: center; padding: 8px 15px; vertical-align: bottom; border-right: 1px dashed #ccc; border-left: 1px dashed #ccc;">
+                                    <div style="border-top: 1px solid #333; padding-top: 6px; margin-top: 55px;">
+                                        <strong style="font-size: 11px;">المهندس المشرف</strong><br/>
+                                        <small style="color: #666; font-size: 9px;">
+                                            <t t-esc="doc.contract_id.engineer_id.name if (doc.contract_id and doc.contract_id.engineer_id) else '..............................'"/>
+                                        </small>
+                                    </div>
+                                </td>
+                                <td style="width: 33%; text-align: center; padding: 8px 15px; vertical-align: bottom;">
+                                    <div style="border-top: 1px solid #333; padding-top: 6px; margin-top: 55px;">
+                                        <strong style="font-size: 11px;">مدير المشروع</strong><br/>
+                                        <small style="color: #666; font-size: 9px;">..............................</small>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ═══════════════════════════════════════════════
+             Module Category
+        ═══════════════════════════════════════════════ -->
+        <record id="module_category_construction" model="ir.module.category">
+            <field name="name">Construction Management</field>
+            <field name="description">نظام إدارة المقاولات</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- ═══════════════════════════════════════════════
+             Security Groups
+        ═══════════════════════════════════════════════ -->
+
+        <!-- Viewer — read only -->
+        <record id="group_construction_viewer" model="res.groups">
+            <field name="name">Viewer | مستخدم عرض</field>
+            <field name="category_id" ref="module_category_construction"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Engineer — read + edit, no delete -->
+        <record id="group_construction_engineer" model="res.groups">
+            <field name="name">Engineer | مهندس موقع</field>
+            <field name="category_id" ref="module_category_construction"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Accountant — contracts and payments access -->
+        <record id="group_construction_accountant" model="res.groups">
+            <field name="name">Accountant | محاسب المقاولات</field>
+            <field name="category_id" ref="module_category_construction"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Manager — full access -->
+        <record id="group_construction_manager" model="res.groups">
+            <field name="name">Manager | مدير المشاريع</field>
+            <field name="category_id" ref="module_category_construction"/>
+            <field name="implied_ids" eval="[
+                (4, ref('group_construction_engineer')),
+                (4, ref('group_construction_accountant')),
+                (4, ref('group_construction_viewer')),
+            ]"/>
+        </record>
+
+    </data>
+</odoo>

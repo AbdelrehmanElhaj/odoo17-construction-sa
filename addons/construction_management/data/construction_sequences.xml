@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+<data>
+
+    <record id="seq_construction_project" model="ir.sequence">
+        <field name="name">Construction Project</field>
+        <field name="code">construction.project</field>
+        <field name="prefix">PROJ-%(year)s-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_construction_boq" model="ir.sequence">
+        <field name="name">Construction BOQ</field>
+        <field name="code">construction.boq</field>
+        <field name="prefix">BOQ-%(year)s-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_construction_contract" model="ir.sequence">
+        <field name="name">Construction Contract</field>
+        <field name="code">construction.contract</field>
+        <field name="prefix">CONT-%(year)s-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_construction_subcontract" model="ir.sequence">
+        <field name="name">Construction Subcontract</field>
+        <field name="code">construction.subcontract</field>
+        <field name="prefix">SUB-%(year)s-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_construction_certificate" model="ir.sequence">
+        <field name="name">Construction Certificate</field>
+        <field name="code">construction.certificate</field>
+        <field name="prefix">CERT-%(year)s-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+</data>
+</odoo>

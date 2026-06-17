@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════
+         BOQ FORM VIEW
+    ═══════════════════════════════════════════ -->
+    <record id="view_construction_boq_form" model="ir.ui.view">
+        <field name="name">construction.boq.form</field>
+        <field name="model">construction.boq</field>
+        <field name="arch" type="xml">
+            <form string="جدول الكميات BOQ">
+
+                <header>
+                    <button name="action_confirm" string="اعتماد BOQ"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="إلغاء"
+                            type="object"
+                            invisible="state in ('cancelled', 'draft')"/>
+                    <button name="action_reset_draft" string="إعادة للمسودة"
+                            type="object"
+                            invisible="state != 'cancelled'"/>
+                    <button name="action_import_excel" string="استيراد Excel"
+                            type="object" icon="fa-upload"
+                            invisible="state == 'confirmed'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed"/>
+                </header>
+
+                <sheet>
+                    <!-- Stats -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-list" type="object"
+                                name="action_import_excel"
+                                invisible="state == 'confirmed'">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="line_count"/>
+                                </span>
+                                <span class="o_stat_text">بند</span>
+                            </div>
+                        </button>
+                        <div class="oe_stat_button" icon="fa-calculator">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="total_estimated" widget="monetary" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">تقديري</span>
+                            </div>
+                        </div>
+                        <div class="oe_stat_button" icon="fa-check-circle-o">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="total_actual" widget="monetary" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">فعلي</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="عنوان جدول الكميات"/>
+                        </h1>
+                        <div>
+                            <field name="boq_code" class="oe_inline text-muted"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="معلومات أساسية">
+                            <field name="project_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="الملخص المالي">
+                            <field name="currency_id"/>
+                            <field name="total_estimated" readonly="1"/>
+                            <field name="total_actual" readonly="1"/>
+                            <field name="variance" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- Tab 1: BOQ Lines -->
+                        <page string="البنود | Items" name="lines">
+                            <field name="line_ids"
+                                   invisible="state == 'confirmed'"
+                                   mode="tree">
+                                <tree string="بنود BOQ" editable="bottom"
+                                      decoration-warning="item_type == 'subcontract'"
+                                      decoration-info="item_type == 'equipment'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="item_code" optional="show"/>
+                                    <field name="description"/>
+                                    <field name="description_ar" optional="hide"/>
+                                    <field name="item_type"/>
+                                    <field name="uom_id"/>
+                                    <field name="qty_estimated"/>
+                                    <field name="unit_price"/>
+                                    <field name="price_estimated" readonly="1"/>
+                                    <field name="qty_actual" optional="show"/>
+                                    <field name="price_actual" readonly="1" optional="show"/>
+                                    <field name="variance" readonly="1" optional="show"/>
+                                    <field name="subcontractor_id"
+                                           optional="hide"
+                                           invisible="item_type != 'subcontract'"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <!-- Read-only view when confirmed -->
+                            <field name="line_ids"
+                                   invisible="state != 'confirmed'"
+                                   mode="tree">
+                                <tree string="بنود BOQ"
+                                      decoration-warning="item_type == 'subcontract'"
+                                      decoration-info="item_type == 'equipment'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="item_code" optional="show"/>
+                                    <field name="description"/>
+                                    <field name="item_type"/>
+                                    <field name="uom_id"/>
+                                    <field name="qty_estimated"/>
+                                    <field name="unit_price"/>
+                                    <field name="price_estimated"/>
+                                    <field name="qty_actual" optional="show"/>
+                                    <field name="price_actual" optional="show"/>
+                                    <field name="variance" optional="show"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- Tab 2: Notes -->
+                        <page string="ملاحظات | Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════
+         BOQ LIST VIEW
+    ═══════════════════════════════════════════ -->
+    <record id="view_construction_boq_list" model="ir.ui.view">
+        <field name="name">construction.boq.list</field>
+        <field name="model">construction.boq</field>
+        <field name="arch" type="xml">
+            <tree string="جداول الكميات"
+                  decoration-success="state == 'confirmed'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="boq_code" optional="show"/>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="date"/>
+                <field name="line_count" string="البنود"/>
+                <field name="total_estimated" sum="إجمالي التقديري"/>
+                <field name="total_actual"    sum="إجمالي الفعلي"/>
+                <field name="variance"        sum="إجمالي الفرق"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'confirmed'"
+                       decoration-warning="state == 'draft'"
+                       decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════
+         BOQ SEARCH VIEW
+    ═══════════════════════════════════════════ -->
+    <record id="view_construction_boq_search" model="ir.ui.view">
+        <field name="name">construction.boq.search</field>
+        <field name="model">construction.boq</field>
+        <field name="arch" type="xml">
+            <search string="بحث في BOQ">
+                <field name="name" string="العنوان"/>
+                <field name="boq_code" string="الرقم"/>
+                <field name="project_id" string="المشروع"/>
+                <separator/>
+                <filter string="مسودة"   name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="معتمد"   name="confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter string="ملغي"    name="cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+                <group expand="0" string="تجميع بـ">
+                    <filter string="المشروع" name="group_project"
+                            context="{'group_by': 'project_id'}"/>
+                    <filter string="الحالة"  name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="السنة"   name="group_year"
+                            context="{'group_by': 'date:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════
+         WINDOW ACTION
+    ═══════════════════════════════════════════ -->
+    <record id="action_construction_boq" model="ir.actions.act_window">
+        <field name="name">جداول الكميات | BOQ</field>
+        <field name="res_model">construction.boq</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_construction_boq_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                أنشئ جدول كميات جديد
+            </p>
+            <p>
+                أضف BOQ للمشروع وحدد الكميات والأسعار التقديرية لكل بند.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action from project (filtered by project_id) -->
+    <record id="action_construction_boq_from_project" model="ir.actions.act_window">
+        <field name="name">جداول الكميات | BOQ</field>
+        <field name="res_model">construction.boq</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_construction_boq_search"/>
+        <field name="context">{'default_project_id': active_id}</field>
+        <field name="domain">[('project_id', '=', active_id)]</field>
+    </record>
+
+</odoo>

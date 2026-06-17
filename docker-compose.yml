@@ -17,7 +17,8 @@ services:
       retries: 10
 
   web:
-    image: odoo:17.0
+    build: .
+    image: odoo17-construction:latest
     container_name: odoo17
     depends_on:
       db:

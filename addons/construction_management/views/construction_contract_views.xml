@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTRACT FORM VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_contract_form" model="ir.ui.view">
+        <field name="name">construction.contract.form</field>
+        <field name="model">construction.contract</field>
+        <field name="arch" type="xml">
+            <form string="عقد المقاولات">
+
+                <header>
+                    <button name="action_activate" string="تفعيل العقد"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_complete" string="إغلاق العقد"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'active'"/>
+                    <button name="action_cancel" string="إلغاء"
+                            type="object"
+                            invisible="state in ('cancelled', 'terminated', 'draft')"/>
+                    <button name="action_terminate" string="فسخ العقد"
+                            type="object" class="text-danger"
+                            invisible="state != 'active'"/>
+                    <button name="action_reset_draft" string="إعادة للمسودة"
+                            type="object"
+                            invisible="state not in ('cancelled', 'terminated')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,completed"/>
+                </header>
+
+                <sheet>
+                    <!-- Smart buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-certificate"
+                                type="object" name="action_view_certificates"
+                                invisible="certificate_count == 0">
+                            <field name="certificate_count" widget="statinfo"
+                                   string="مستخلصات"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-users"
+                                type="object" name="action_view_subcontracts"
+                                invisible="subcontract_count == 0">
+                            <field name="subcontract_count" widget="statinfo"
+                                   string="مقاول باطن"/>
+                        </button>
+                        <div class="oe_stat_button" icon="fa-calendar-check-o">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="paid_payment_count"/>/<field name="payment_count"/>
+                                </span>
+                                <span class="o_stat_text">دفعات مسددة</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="اسم العقد"/>
+                        </h1>
+                        <div>
+                            <field name="contract_code" class="oe_inline text-muted"/>
+                            <span class="mx-2 text-muted">|</span>
+                            <field name="contract_type" class="oe_inline"/>
+                        </div>
+                    </div>
+
+                    <!-- Main info -->
+                    <group>
+                        <group string="أطراف العقد">
+                            <field name="project_id"/>
+                            <field name="partner_id" widget="many2one_avatar"/>
+                            <field name="engineer_id" widget="many2one_avatar_user"/>
+                            <field name="boq_id"/>
+                        </group>
+                        <group string="التواريخ">
+                            <field name="date_signed"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="date_actual_end"/>
+                        </group>
+                    </group>
+
+                    <!-- Financial summary -->
+                    <group>
+                        <group string="القيمة المالية">
+                            <field name="currency_id"/>
+                            <field name="contract_value"/>
+                            <field name="retention_percent"/>
+                            <field name="retention_amount" readonly="1"/>
+                            <field name="advance_percent"/>
+                            <field name="advance_amount" readonly="1"/>
+                        </group>
+                        <group string="متابعة الدفعات">
+                            <field name="total_scheduled" readonly="1"/>
+                            <field name="total_paid"      readonly="1"/>
+                            <field name="balance_due"     readonly="1"/>
+                            <field name="payment_terms_notes"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- Tab 1: Payment Schedule -->
+                        <page string="جدول الدفعات | Payment Schedule" name="payments">
+                            <field name="payment_line_ids" mode="tree">
+                                <tree string="جدول الدفعات" editable="bottom"
+                                      decoration-success="state == 'paid'"
+                                      decoration-warning="state == 'due'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="payment_type"/>
+                                    <field name="due_date"/>
+                                    <field name="percent"/>
+                                    <field name="amount"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'paid'"
+                                           decoration-warning="state == 'due'"
+                                           decoration-info="state == 'pending'"/>
+                                    <field name="paid_date" optional="show"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <button name="action_mark_due" type="object"
+                                            icon="fa-clock-o" string=""
+                                            title="تعليم: مستحق"
+                                            invisible="state != 'pending'"/>
+                                    <button name="action_mark_paid" type="object"
+                                            icon="fa-check" string=""
+                                            title="تسجيل دفع"
+                                            class="text-success"
+                                            invisible="state == 'paid'"/>
+                                    <button name="action_reset_pending" type="object"
+                                            icon="fa-undo" string=""
+                                            title="إلغاء الدفع"
+                                            invisible="state != 'paid'"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- Tab 2: Subcontracts -->
+                        <page string="عقود الباطن | Subcontracts" name="subcontracts">
+                            <field name="subcontract_ids" mode="tree">
+                                <tree string="عقود الباطن"
+                                      decoration-success="state == 'completed'"
+                                      decoration-muted="state == 'cancelled'">
+                                    <field name="subcontract_code" optional="show"/>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="subcontract_value" sum="إجمالي الباطن"/>
+                                    <field name="retention_percent" optional="show"/>
+                                    <field name="retention_amount"  optional="show"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'completed'"
+                                           decoration-info="state == 'active'"
+                                           decoration-warning="state == 'draft'"
+                                           decoration-danger="state == 'cancelled'"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- Tab 3: Scope of Work -->
+                        <page string="نطاق العمل | Scope" name="scope">
+                            <field name="scope_of_work"/>
+                        </page>
+
+                        <!-- Tab 4: Special Conditions & Notes -->
+                        <page string="الشروط والملاحظات" name="conditions">
+                            <group string="شروط خاصة">
+                                <field name="special_conditions" nolabel="1"/>
+                            </group>
+                            <group string="ملاحظات">
+                                <field name="notes" nolabel="1"/>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTRACT LIST VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_contract_list" model="ir.ui.view">
+        <field name="name">construction.contract.list</field>
+        <field name="model">construction.contract</field>
+        <field name="arch" type="xml">
+            <tree string="العقود"
+                  decoration-success="state == 'completed'"
+                  decoration-info="state == 'active'"
+                  decoration-muted="state in ('cancelled', 'terminated')">
+                <field name="contract_code" optional="show"/>
+                <field name="name"/>
+                <field name="contract_type" optional="show"/>
+                <field name="project_id"/>
+                <field name="partner_id"/>
+                <field name="date_signed" optional="show"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="contract_value" sum="إجمالي العقود"/>
+                <field name="total_paid"     sum="إجمالي المدفوع" optional="show"/>
+                <field name="balance_due"    sum="إجمالي المستحق" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'completed'"
+                       decoration-info="state == 'active'"
+                       decoration-warning="state == 'draft'"
+                       decoration-danger="state in ('cancelled', 'terminated')"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTRACT SEARCH VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_contract_search" model="ir.ui.view">
+        <field name="name">construction.contract.search</field>
+        <field name="model">construction.contract</field>
+        <field name="arch" type="xml">
+            <search string="بحث في العقود">
+                <field name="name"          string="اسم العقد"/>
+                <field name="contract_code" string="الرقم"/>
+                <field name="project_id"    string="المشروع"/>
+                <field name="partner_id"    string="المقاول"/>
+                <separator/>
+                <filter string="نشط"    name="active"    domain="[('state', '=', 'active')]"/>
+                <filter string="مسودة"  name="draft"     domain="[('state', '=', 'draft')]"/>
+                <filter string="مكتمل"  name="completed" domain="[('state', '=', 'completed')]"/>
+                <filter string="ملغي"   name="cancelled"
+                        domain="[('state', 'in', ['cancelled', 'terminated'])]"/>
+                <separator/>
+                <filter string="عقود رئيسية" name="main"
+                        domain="[('contract_type', '=', 'main')]"/>
+                <group expand="0" string="تجميع بـ">
+                    <filter string="المشروع"   name="group_project"
+                            context="{'group_by': 'project_id'}"/>
+                    <filter string="المقاول"   name="group_partner"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter string="الحالة"    name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="النوع"     name="group_type"
+                            context="{'group_by': 'contract_type'}"/>
+                    <filter string="السنة"     name="group_year"
+                            context="{'group_by': 'date_signed:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SUBCONTRACT FORM VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_subcontract_form" model="ir.ui.view">
+        <field name="name">construction.subcontract.form</field>
+        <field name="model">construction.subcontract</field>
+        <field name="arch" type="xml">
+            <form string="عقد الباطن">
+
+                <header>
+                    <button name="action_activate" string="تفعيل"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_complete" string="إغلاق"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'active'"/>
+                    <button name="action_cancel" string="إلغاء"
+                            type="object"
+                            invisible="state in ('cancelled', 'completed', 'draft')"/>
+                    <button name="action_reset_draft" string="إعادة للمسودة"
+                            type="object"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,completed"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="اسم عقد الباطن"/>
+                        </h1>
+                        <div>
+                            <field name="subcontract_code" class="oe_inline text-muted"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="الأطراف">
+                            <field name="contract_id"/>
+                            <field name="project_id" readonly="1"/>
+                            <field name="partner_id" widget="many2one_avatar"/>
+                        </group>
+                        <group string="التواريخ">
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+
+                    <group string="القيمة المالية">
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="subcontract_value"/>
+                        </group>
+                        <group>
+                            <field name="retention_percent"/>
+                            <field name="retention_amount" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="نطاق الأعمال | Scope" name="scope">
+                            <field name="scope_description"/>
+                        </page>
+                        <page string="ملاحظات | Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SUBCONTRACT LIST VIEW
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="view_construction_subcontract_list" model="ir.ui.view">
+        <field name="name">construction.subcontract.list</field>
+        <field name="model">construction.subcontract</field>
+        <field name="arch" type="xml">
+            <tree string="عقود الباطن"
+                  decoration-success="state == 'completed'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="subcontract_code" optional="show"/>
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="project_id" optional="show"/>
+                <field name="partner_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="subcontract_value" sum="إجمالي عقود الباطن"/>
+                <field name="retention_percent" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'completed'"
+                       decoration-info="state == 'active'"
+                       decoration-warning="state == 'draft'"
+                       decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         WINDOW ACTIONS
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="action_construction_contract" model="ir.actions.act_window">
+        <field name="name">العقود | Contracts</field>
+        <field name="res_model">construction.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_construction_contract_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">أنشئ عقدك الأول</p>
+            <p>أضف عقود المقاولين وتتبع الدفعات والمستخلصات.</p>
+        </field>
+    </record>
+
+    <record id="action_construction_contract_from_project" model="ir.actions.act_window">
+        <field name="name">العقود | Contracts</field>
+        <field name="res_model">construction.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_construction_contract_search"/>
+        <field name="context">{'default_project_id': active_id}</field>
+        <field name="domain">[('project_id', '=', active_id)]</field>
+    </record>
+
+    <record id="action_construction_subcontract" model="ir.actions.act_window">
+        <field name="name">عقود الباطن | Subcontracts</field>
+        <field name="res_model">construction.subcontract</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">أنشئ عقد باطن</p>
+        </field>
+    </record>
+
+</odoo>

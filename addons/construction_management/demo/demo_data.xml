@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Demo Partners — Saudi Contractors
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <record id="partner_contractor_binladen" model="res.partner">
+        <field name="name">شركة الإنشاءات السعودية للمقاولات</field>
+        <field name="company_type">company</field>
+        <field name="is_company">True</field>
+        <field name="is_contractor">True</field>
+        <field name="country_id" ref="base.sa"/>
+        <field name="vat">310000000000003</field>
+        <field name="commercial_registration">1010123456</field>
+        <field name="phone">+966112345678</field>
+        <field name="email">info@saudi-construct.sa</field>
+        <field name="city">الرياض</field>
+        <field name="contractor_grade">A</field>
+        <field name="contractor_type">general</field>
+    </record>
+
+    <record id="partner_contractor_almabani" model="res.partner">
+        <field name="name">شركة المباني العصرية للمقاولات</field>
+        <field name="company_type">company</field>
+        <field name="is_company">True</field>
+        <field name="is_contractor">True</field>
+        <field name="country_id" ref="base.sa"/>
+        <field name="vat">310000000000004</field>
+        <field name="commercial_registration">1010234567</field>
+        <field name="phone">+966122345678</field>
+        <field name="email">info@almabani.sa</field>
+        <field name="city">جدة</field>
+        <field name="contractor_grade">B</field>
+        <field name="contractor_type">mep</field>
+    </record>
+
+    <record id="partner_client_aramco" model="res.partner">
+        <field name="name">شركة أرامكو العقارية</field>
+        <field name="company_type">company</field>
+        <field name="is_company">True</field>
+        <field name="country_id" ref="base.sa"/>
+        <field name="vat">300000000000003</field>
+        <field name="phone">+966138001234</field>
+        <field name="email">projects@aramco-realty.sa</field>
+        <field name="city">الدمام</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Demo Projects
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <record id="project_riyadh_residential" model="construction.project">
+        <field name="name">مشروع مجمع الياسمين السكني — الرياض</field>
+        <field name="project_type">residential</field>
+        <field name="state">active</field>
+        <field name="partner_id" ref="partner_client_aramco"/>
+        <field name="date_start">2024-01-15</field>
+        <field name="date_end">2025-12-31</field>
+        <field name="currency_id" ref="base.SAR"/>
+        <field name="contract_value">12500000</field>
+        <field name="budget_estimated">11800000</field>
+        <field name="site_building_no">1234</field>
+        <field name="site_street">طريق الملك عبدالعزيز</field>
+        <field name="site_district">حي الياسمين</field>
+        <field name="site_postal_code">13311</field>
+        <field name="building_permit">BP-2024-001234</field>
+        <field name="description">&lt;p&gt;مشروع بناء مجمع سكني يشمل 48 وحدة سكنية متنوعة (فيلات وشقق) في حي الياسمين بالرياض. يتضمن المشروع مرافق مشتركة وحدائق ومواقف سيارات.&lt;/p&gt;</field>
+    </record>
+
+    <record id="project_jeddah_commercial" model="construction.project">
+        <field name="name">مشروع مركز النخيل التجاري — جدة</field>
+        <field name="project_type">commercial</field>
+        <field name="state">active</field>
+        <field name="partner_id" ref="partner_client_aramco"/>
+        <field name="date_start">2024-03-01</field>
+        <field name="date_end">2026-02-28</field>
+        <field name="currency_id" ref="base.SAR"/>
+        <field name="contract_value">28000000</field>
+        <field name="budget_estimated">26500000</field>
+        <field name="site_building_no">5678</field>
+        <field name="site_street">شارع الأمير محمد بن عبدالعزيز</field>
+        <field name="site_district">حي الروضة</field>
+        <field name="site_postal_code">21418</field>
+        <field name="building_permit">JP-2024-005678</field>
+        <field name="description">&lt;p&gt;إنشاء مركز تجاري متكامل يضم 120 محلاً تجارياً على 4 طوابق، بمساحة إجمالية 18,000 م² مع مواقف سيارات متعددة الطوابق.&lt;/p&gt;</field>
+    </record>
+
+    <record id="project_dammam_infrastructure" model="construction.project">
+        <field name="name">مشروع البنية التحتية — الدمام</field>
+        <field name="project_type">infra</field>
+        <field name="state">draft</field>
+        <field name="date_start">2025-01-01</field>
+        <field name="date_end">2026-06-30</field>
+        <field name="currency_id" ref="base.SAR"/>
+        <field name="contract_value">5750000</field>
+        <field name="budget_estimated">5500000</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Demo BOQ — Riyadh Residential
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <record id="boq_riyadh_main" model="construction.boq">
+        <field name="name">جدول كميات مجمع الياسمين السكني</field>
+        <field name="project_id" ref="project_riyadh_residential"/>
+        <field name="state">confirmed</field>
+        <field name="date">2024-01-10</field>
+    </record>
+
+    <!-- BOQ Lines — Civil Works -->
+    <record id="boq_line_excavation" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">10</field>
+        <field name="item_code">A-001</field>
+        <field name="description">أعمال الحفر والردم</field>
+        <field name="description_ar">أعمال الحفر والردم</field>
+        <field name="item_type">labor</field>
+        <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+        <field name="qty_estimated">3500</field>
+        <field name="unit_price">45</field>
+    </record>
+
+    <record id="boq_line_foundation" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">20</field>
+        <field name="item_code">A-002</field>
+        <field name="description">أعمال الأساسات الخرسانية</field>
+        <field name="description_ar">أعمال الأساسات الخرسانية</field>
+        <field name="item_type">material</field>
+        <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+        <field name="qty_estimated">820</field>
+        <field name="unit_price">680</field>
+    </record>
+
+    <record id="boq_line_concrete_structure" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">30</field>
+        <field name="item_code">A-003</field>
+        <field name="description">الهيكل الخرساني المسلح — الأدوار</field>
+        <field name="description_ar">الهيكل الخرساني المسلح — الأدوار</field>
+        <field name="item_type">material</field>
+        <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+        <field name="qty_estimated">2400</field>
+        <field name="unit_price">850</field>
+    </record>
+
+    <record id="boq_line_masonry" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">40</field>
+        <field name="item_code">B-001</field>
+        <field name="description">أعمال البناء بالطابوق</field>
+        <field name="description_ar">أعمال البناء بالطابوق</field>
+        <field name="item_type">material</field>
+        <field name="uom_id" ref="uom.uom_square_meter"/>
+        <field name="qty_estimated">9600</field>
+        <field name="unit_price">120</field>
+    </record>
+
+    <record id="boq_line_plumbing" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">50</field>
+        <field name="item_code">C-001</field>
+        <field name="description">أعمال الصرف الصحي والسباكة</field>
+        <field name="description_ar">أعمال الصرف الصحي والسباكة</field>
+        <field name="item_type">subcontract</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="qty_estimated">48</field>
+        <field name="unit_price">28000</field>
+        <field name="subcontractor_id" ref="partner_contractor_almabani"/>
+    </record>
+
+    <record id="boq_line_electrical" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">60</field>
+        <field name="item_code">C-002</field>
+        <field name="description">أعمال الكهرباء والإضاءة</field>
+        <field name="description_ar">أعمال الكهرباء والإضاءة</field>
+        <field name="item_type">subcontract</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="qty_estimated">48</field>
+        <field name="unit_price">22000</field>
+        <field name="subcontractor_id" ref="partner_contractor_almabani"/>
+    </record>
+
+    <record id="boq_line_finishing" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">70</field>
+        <field name="item_code">D-001</field>
+        <field name="description">أعمال التشطيب والدهانات</field>
+        <field name="description_ar">أعمال التشطيب والدهانات</field>
+        <field name="item_type">material</field>
+        <field name="uom_id" ref="uom.uom_square_meter"/>
+        <field name="qty_estimated">15000</field>
+        <field name="unit_price">180</field>
+    </record>
+
+    <record id="boq_line_landscaping" model="construction.boq.line">
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="sequence">80</field>
+        <field name="item_code">E-001</field>
+        <field name="description">أعمال تنسيق المواقع والحدائق</field>
+        <field name="description_ar">أعمال تنسيق المواقع والحدائق</field>
+        <field name="item_type">overhead</field>
+        <field name="uom_id" ref="uom.uom_square_meter"/>
+        <field name="qty_estimated">4200</field>
+        <field name="unit_price">95</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Demo Contract — Riyadh Residential
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <record id="contract_riyadh_main" model="construction.contract">
+        <field name="name">عقد إنشاء مجمع الياسمين السكني</field>
+        <field name="contract_type">main</field>
+        <field name="state">active</field>
+        <field name="project_id" ref="project_riyadh_residential"/>
+        <field name="partner_id" ref="partner_contractor_binladen"/>
+        <field name="boq_id" ref="boq_riyadh_main"/>
+        <field name="date_signed">2024-01-20</field>
+        <field name="date_start">2024-02-01</field>
+        <field name="date_end">2025-12-31</field>
+        <field name="contract_value">12500000</field>
+        <field name="retention_percent">5</field>
+        <field name="advance_percent">10</field>
+        <field name="payment_terms_notes">دفعات شهرية حسب نسبة الإنجاز، مع احتجاز 5% ضمان لمدة سنة من تاريخ الاستلام</field>
+    </record>
+
+    <!-- Payment Schedule -->
+    <record id="payment_advance" model="construction.payment.line">
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="sequence">10</field>
+        <field name="name">الدفعة المقدمة (10%)</field>
+        <field name="payment_type">advance</field>
+        <field name="percent">10</field>
+        <field name="amount">1250000</field>
+        <field name="due_date">2024-02-01</field>
+        <field name="state">paid</field>
+        <field name="paid_date">2024-02-05</field>
+    </record>
+
+    <record id="payment_milestone_1" model="construction.payment.line">
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="sequence">20</field>
+        <field name="name">مرحلة 1 — اكتمال الأساسات (25%)</field>
+        <field name="payment_type">milestone</field>
+        <field name="percent">25</field>
+        <field name="amount">3125000</field>
+        <field name="due_date">2024-06-30</field>
+        <field name="state">paid</field>
+        <field name="paid_date">2024-07-10</field>
+    </record>
+
+    <record id="payment_milestone_2" model="construction.payment.line">
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="sequence">30</field>
+        <field name="name">مرحلة 2 — اكتمال الهيكل (25%)</field>
+        <field name="payment_type">milestone</field>
+        <field name="percent">25</field>
+        <field name="amount">3125000</field>
+        <field name="due_date">2024-12-31</field>
+        <field name="state">due</field>
+    </record>
+
+    <record id="payment_milestone_3" model="construction.payment.line">
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="sequence">40</field>
+        <field name="name">مرحلة 3 — اكتمال التشطيب (25%)</field>
+        <field name="payment_type">milestone</field>
+        <field name="percent">25</field>
+        <field name="amount">3125000</field>
+        <field name="due_date">2025-09-30</field>
+        <field name="state">pending</field>
+    </record>
+
+    <record id="payment_retention" model="construction.payment.line">
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="sequence">50</field>
+        <field name="name">إفراج الضمان (5%) — بعد سنة من الاستلام</field>
+        <field name="payment_type">retention</field>
+        <field name="percent">5</field>
+        <field name="amount">625000</field>
+        <field name="due_date">2026-12-31</field>
+        <field name="state">pending</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Demo Subcontract
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <record id="subcontract_plumbing" model="construction.subcontract">
+        <field name="name">عقد باطن — الصرف الصحي والسباكة</field>
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="state">active</field>
+        <field name="partner_id" ref="partner_contractor_almabani"/>
+        <field name="date_start">2024-05-01</field>
+        <field name="date_end">2025-06-30</field>
+        <field name="subcontract_value">1344000</field>
+        <field name="retention_percent">5</field>
+        <field name="scope_description">&lt;p&gt;أعمال الصرف الصحي الداخلي والخارجي وتركيب شبكة المياه الباردة والساخنة لجميع الوحدات السكنية الـ 48.&lt;/p&gt;</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Demo Certificates
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <record id="certificate_001" model="construction.certificate">
+        <field name="name">المستخلص الأول — أعمال الحفر والأساسات</field>
+        <field name="certificate_number">1</field>
+        <field name="project_id" ref="project_riyadh_residential"/>
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="payment_line_id" ref="payment_milestone_1"/>
+        <field name="state">paid</field>
+        <field name="date_from">2024-02-01</field>
+        <field name="date_to">2024-05-31</field>
+        <field name="date_submitted">2024-06-05</field>
+        <field name="date_approved">2024-06-15</field>
+        <field name="date_paid">2024-07-10</field>
+        <field name="retention_percent">5</field>
+        <field name="advance_deduction">312500</field>
+        <field name="vat_rate">15</field>
+    </record>
+
+    <!-- Certificate 1 Lines -->
+    <record id="cert_line_001_excav" model="construction.certificate.line">
+        <field name="certificate_id" ref="certificate_001"/>
+        <field name="sequence">10</field>
+        <field name="boq_line_id" ref="boq_line_excavation"/>
+        <field name="description">أعمال الحفر والردم</field>
+        <field name="item_type">labor</field>
+        <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+        <field name="qty_boq">3500</field>
+        <field name="qty_previous">0</field>
+        <field name="qty_this">3500</field>
+        <field name="unit_price">45</field>
+    </record>
+
+    <record id="cert_line_001_found" model="construction.certificate.line">
+        <field name="certificate_id" ref="certificate_001"/>
+        <field name="sequence">20</field>
+        <field name="boq_line_id" ref="boq_line_foundation"/>
+        <field name="description">أعمال الأساسات الخرسانية</field>
+        <field name="item_type">material</field>
+        <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+        <field name="qty_boq">820</field>
+        <field name="qty_previous">0</field>
+        <field name="qty_this">820</field>
+        <field name="unit_price">680</field>
+    </record>
+
+    <record id="certificate_002" model="construction.certificate">
+        <field name="name">المستخلص الثاني — أعمال الهيكل الخرساني</field>
+        <field name="certificate_number">2</field>
+        <field name="project_id" ref="project_riyadh_residential"/>
+        <field name="contract_id" ref="contract_riyadh_main"/>
+        <field name="payment_line_id" ref="payment_milestone_2"/>
+        <field name="state">approved</field>
+        <field name="date_from">2024-06-01</field>
+        <field name="date_to">2024-11-30</field>
+        <field name="date_submitted">2024-12-05</field>
+        <field name="date_approved">2024-12-20</field>
+        <field name="retention_percent">5</field>
+        <field name="advance_deduction">312500</field>
+        <field name="vat_rate">15</field>
+    </record>
+
+    <record id="cert_line_002_concrete" model="construction.certificate.line">
+        <field name="certificate_id" ref="certificate_002"/>
+        <field name="sequence">10</field>
+        <field name="boq_line_id" ref="boq_line_concrete_structure"/>
+        <field name="description">الهيكل الخرساني المسلح — الأدوار</field>
+        <field name="item_type">material</field>
+        <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+        <field name="qty_boq">2400</field>
+        <field name="qty_previous">0</field>
+        <field name="qty_this">1800</field>
+        <field name="unit_price">850</field>
+    </record>
+
+    <record id="cert_line_002_masonry" model="construction.certificate.line">
+        <field name="certificate_id" ref="certificate_002"/>
+        <field name="sequence">20</field>
+        <field name="boq_line_id" ref="boq_line_masonry"/>
+        <field name="description">أعمال البناء بالطابوق</field>
+        <field name="item_type">material</field>
+        <field name="uom_id" ref="uom.uom_square_meter"/>
+        <field name="qty_boq">9600</field>
+        <field name="qty_previous">0</field>
+        <field name="qty_this">6500</field>
+        <field name="unit_price">120</field>
+    </record>
+
+    <!-- Draft certificate for Jeddah project (linked to second contract) -->
+    <record id="contract_jeddah_main" model="construction.contract">
+        <field name="name">عقد إنشاء مركز النخيل التجاري</field>
+        <field name="contract_type">main</field>
+        <field name="state">active</field>
+        <field name="project_id" ref="project_jeddah_commercial"/>
+        <field name="partner_id" ref="partner_contractor_binladen"/>
+        <field name="date_signed">2024-03-10</field>
+        <field name="date_start">2024-04-01</field>
+        <field name="date_end">2026-02-28</field>
+        <field name="contract_value">28000000</field>
+        <field name="retention_percent">5</field>
+        <field name="advance_percent">10</field>
+    </record>
+
+    <record id="certificate_jeddah_001" model="construction.certificate">
+        <field name="name">المستخلص الأول — مركز النخيل التجاري</field>
+        <field name="certificate_number">1</field>
+        <field name="project_id" ref="project_jeddah_commercial"/>
+        <field name="contract_id" ref="contract_jeddah_main"/>
+        <field name="state">review</field>
+        <field name="date_from">2024-04-01</field>
+        <field name="date_to">2024-09-30</field>
+        <field name="date_submitted">2024-10-05</field>
+        <field name="retention_percent">5</field>
+        <field name="advance_deduction">700000</field>
+        <field name="vat_rate">15</field>
+    </record>
+
+</data>
+</odoo>
