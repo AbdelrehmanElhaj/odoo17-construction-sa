@@ -29,6 +29,7 @@ Features:
         'security/ir.model.access.csv',
         'data/saudi_cities.xml',
         'data/construction_sequences.xml',
+        'data/expiry_cron.xml',
         'views/saudi_address_views.xml',
         'views/res_partner_views.xml',
         'views/construction_project_views.xml',

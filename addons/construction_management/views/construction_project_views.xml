@@ -88,6 +88,12 @@
                                     <field name="building_permit"/>
                                     <field name="municipality_ref"/>
                                     <field name="permit_expiry"/>
+                                    <field name="permit_status"
+                                           widget="badge"
+                                           decoration-success="permit_status == 'valid'"
+                                           decoration-warning="permit_status == 'expiring'"
+                                           decoration-danger="permit_status == 'expired'"
+                                           invisible="not permit_expiry"/>
                                 </group>
                             </group>
                             <group string="العنوان الوطني للموقع | Site National Address">

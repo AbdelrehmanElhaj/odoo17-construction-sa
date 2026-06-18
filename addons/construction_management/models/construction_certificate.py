@@ -186,6 +186,29 @@ class ConstructionCertificate(models.Model):
         if self.contract_id:
             self.retention_percent = self.contract_id.retention_percent
 
+    # ── Validation helpers ────────────────────────────────────────────
+
+    def _validate_amount_vs_contract(self):
+        for rec in self:
+            if not rec.contract_id or not rec.contract_id.contract_value:
+                continue
+            sibling_total = sum(
+                c.amount_gross
+                for c in rec.contract_id.certificate_ids
+                if c.state in ('review', 'approved', 'paid') and c.id != rec.id
+            )
+            total = sibling_total + rec.amount_gross
+            limit = rec.contract_id.contract_value
+            if total > limit:
+                excess = total - limit
+                currency = rec.currency_id.name or 'SAR'
+                raise ValidationError(
+                    'لا يمكن تجاوز قيمة العقد.\n'
+                    f'قيمة العقد:  {limit:,.2f} {currency}\n'
+                    f'إجمالي المستخلصات (شاملاً هذا المستخلص):  {total:,.2f} {currency}\n'
+                    f'الزيادة:  {excess:,.2f} {currency}'
+                )
+
     # ── Constraints ───────────────────────────────────────────────────
 
     @api.constrains('date_from', 'date_to')
@@ -193,6 +216,25 @@ class ConstructionCertificate(models.Model):
         for rec in self:
             if rec.date_from and rec.date_to and rec.date_to < rec.date_from:
                 raise ValidationError('"إلى تاريخ" يجب أن يكون بعد "من تاريخ".')
+
+    @api.constrains('date_from', 'date_to', 'contract_id')
+    def _check_period_overlap(self):
+        for rec in self:
+            if not rec.contract_id or not rec.date_from or not rec.date_to:
+                continue
+            overlap = self.search([
+                ('contract_id', '=', rec.contract_id.id),
+                ('id', '!=', rec.id),
+                ('state', 'not in', ['draft']),
+                ('date_from', '<=', rec.date_to),
+                ('date_to', '>=', rec.date_from),
+            ], limit=1)
+            if overlap:
+                raise ValidationError(
+                    f'فترة المستخلص تتداخل مع المستخلص "{overlap.name}" '
+                    f'({overlap.date_from} – {overlap.date_to}).\n'
+                    'يجب أن تكون فترات المستخلصات متتالية وغير متداخلة.'
+                )
 
     # ── Sequence ──────────────────────────────────────────────────────
 
@@ -209,12 +251,25 @@ class ConstructionCertificate(models.Model):
     # ── State transitions ─────────────────────────────────────────────
 
     def action_submit_review(self):
+        self._validate_amount_vs_contract()
         self.write({
             'state': 'review',
             'date_submitted': fields.Date.today(),
         })
+        for rec in self:
+            reviewer = rec.reviewed_by or self.env['res.users'].browse(self.env.uid)
+            rec.activity_schedule(
+                activity_type_xmlid='mail.mail_activity_data_todo',
+                summary=f'مراجعة المستخلص {rec.certificate_code}',
+                user_id=reviewer.id,
+                note=(
+                    f'يرجى مراجعة المستخلص <b>{rec.certificate_code} — {rec.name}</b><br/>'
+                    f'الإجمالي: <b>{rec.amount_gross:,.2f} {rec.currency_id.name or "SAR"}</b>'
+                ),
+            )
 
     def action_approve(self):
+        self._validate_amount_vs_contract()
         self.write({
             'state': 'approved',
             'approved_by': self.env.user.id,
@@ -223,6 +278,25 @@ class ConstructionCertificate(models.Model):
         for rec in self:
             if rec.payment_line_id and rec.payment_line_id.state == 'pending':
                 rec.payment_line_id.action_mark_due()
+            rec.message_post(
+                body=(
+                    f'✓ اعتمد المستخلص <b>{rec.approved_by.name}</b> بتاريخ {rec.date_approved}<br/>'
+                    f'الإجمالي قبل الخصومات: {rec.amount_gross:,.2f} {rec.currency_id.name or "SAR"}<br/>'
+                    f'خصم الضمان ({rec.retention_percent:.1f}%): {rec.retention_amount:,.2f}<br/>'
+                    f'ضريبة القيمة المضافة ({rec.vat_rate:.0f}%): {rec.vat_amount:,.2f}<br/>'
+                    f'<b>الإجمالي المستحق شامل الضريبة: {rec.amount_with_vat:,.2f} {rec.currency_id.name or "SAR"}</b>'
+                ),
+                subtype_xmlid='mail.mt_note',
+            )
+            rec.activity_schedule(
+                activity_type_xmlid='mail.mail_activity_data_todo',
+                summary=f'صرف دفعة المستخلص {rec.certificate_code}',
+                user_id=self.env.uid,
+                note=(
+                    f'المستخلص <b>{rec.certificate_code}</b> معتمد وجاهز للصرف.<br/>'
+                    f'المبلغ المستحق شامل الضريبة: <b>{rec.amount_with_vat:,.2f} {rec.currency_id.name or "SAR"}</b>'
+                ),
+            )
 
     def action_mark_paid(self):
         self.write({

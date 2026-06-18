@@ -62,6 +62,34 @@ class ConstructionContract(models.Model):
         string='قيمة الدفعة المقدمة | Advance',
         compute='_compute_financials', store=True)
 
+    # ── Amendment / Addendum linking ──────────────────────────────────
+
+    parent_contract_id = fields.Many2one(
+        'construction.contract',
+        string='العقد الأصلي | Parent Contract',
+        domain="[('contract_type', '=', 'main'), ('project_id', '=', project_id)]",
+        ondelete='restrict', tracking=True, index=True)
+    amendment_ids = fields.One2many(
+        'construction.contract', 'parent_contract_id',
+        string='الملاحق والإضافات | Amendments')
+    amendment_count = fields.Integer(
+        compute='_compute_amendment_count', store=True, string='عدد الملاحق')
+    amendment_value = fields.Monetary(
+        string='قيمة التعديل ± | Amendment Value',
+        tracking=True,
+        help='المبلغ الإضافي أو التخفيضي لهذا الملحق — يمكن أن يكون سالباً')
+    amendment_reason = fields.Char(
+        string='سبب التعديل | Amendment Reason', tracking=True)
+
+    # ── Effective value (main contracts) ──────────────────────────────
+
+    total_amendments_value = fields.Monetary(
+        string='إجمالي قيمة الملاحق | Total Amendments',
+        compute='_compute_effective_value', store=True)
+    effective_contract_value = fields.Monetary(
+        string='القيمة الفعلية | Effective Contract Value',
+        compute='_compute_effective_value', store=True)
+
     # ── BOQ link ──────────────────────────────────────────────────────
 
     boq_id = fields.Many2one(
@@ -78,6 +106,27 @@ class ConstructionContract(models.Model):
         string='إجمالي المدفوع', compute='_compute_payment_totals', store=True)
     balance_due = fields.Monetary(
         string='الرصيد المستحق', compute='_compute_payment_totals', store=True)
+
+    # ── Certificate totals ────────────────────────────────────────────
+
+    total_certified = fields.Monetary(
+        string='إجمالي المعتمد | Total Certified',
+        compute='_compute_certified_totals', store=True)
+    remaining_to_certify = fields.Monetary(
+        string='المتبقي للاعتماد | Remaining to Certify',
+        compute='_compute_certified_totals', store=True)
+
+    # ── Retention tracking ────────────────────────────────────────────
+
+    total_retention_held = fields.Monetary(
+        string='إجمالي الضمان المحتجز | Total Retention Held',
+        compute='_compute_retention_balance', store=True)
+    retention_released = fields.Monetary(
+        string='الضمان المُفرج عنه | Retention Released',
+        compute='_compute_retention_balance', store=True)
+    retention_balance = fields.Monetary(
+        string='رصيد الضمان | Retention Balance',
+        compute='_compute_retention_balance', store=True)
 
     # ── Subcontracts ──────────────────────────────────────────────────
 
@@ -108,6 +157,60 @@ class ConstructionContract(models.Model):
         for rec in self:
             rec.retention_amount = rec.contract_value * rec.retention_percent / 100.0
             rec.advance_amount   = rec.contract_value * rec.advance_percent   / 100.0
+
+    @api.depends('amendment_ids')
+    def _compute_amendment_count(self):
+        for rec in self:
+            rec.amendment_count = len(rec.amendment_ids)
+
+    @api.depends(
+        'amendment_ids.amendment_value', 'amendment_ids.state',
+        'contract_value', 'contract_type')
+    def _compute_effective_value(self):
+        for rec in self:
+            if rec.contract_type == 'main':
+                amendments_total = sum(
+                    a.amendment_value
+                    for a in rec.amendment_ids
+                    if a.state in ('active', 'completed')
+                )
+                rec.total_amendments_value = amendments_total
+                rec.effective_contract_value = rec.contract_value + amendments_total
+            else:
+                rec.total_amendments_value = 0.0
+                rec.effective_contract_value = rec.contract_value
+
+    @api.depends(
+        'certificate_ids.amount_gross', 'certificate_ids.state', 'contract_value')
+    def _compute_certified_totals(self):
+        for rec in self:
+            certified = sum(
+                c.amount_gross
+                for c in rec.certificate_ids
+                if c.state in ('review', 'approved', 'paid')
+            )
+            rec.total_certified = certified
+            rec.remaining_to_certify = rec.contract_value - certified
+
+    @api.depends(
+        'certificate_ids.retention_amount', 'certificate_ids.state',
+        'payment_line_ids.amount', 'payment_line_ids.state',
+        'payment_line_ids.payment_type')
+    def _compute_retention_balance(self):
+        for rec in self:
+            held = sum(
+                c.retention_amount
+                for c in rec.certificate_ids
+                if c.state in ('approved', 'paid')
+            )
+            released = sum(
+                l.amount
+                for l in rec.payment_line_ids
+                if l.payment_type == 'retention' and l.state == 'paid'
+            )
+            rec.total_retention_held = held
+            rec.retention_released = released
+            rec.retention_balance = held - released
 
     @api.depends('payment_line_ids.amount', 'payment_line_ids.state')
     def _compute_payment_totals(self):
@@ -141,6 +244,27 @@ class ConstructionContract(models.Model):
 
     # ── Constraints ───────────────────────────────────────────────────
 
+    @api.constrains('contract_type', 'parent_contract_id', 'project_id')
+    def _check_amendment_parent(self):
+        for rec in self:
+            if rec.contract_type in ('amendment', 'addendum'):
+                if not rec.parent_contract_id:
+                    raise ValidationError(
+                        'يجب تحديد العقد الأصلي للملاحق والإضافات.'
+                    )
+                if rec.parent_contract_id.contract_type != 'main':
+                    raise ValidationError(
+                        'العقد الأصلي يجب أن يكون من نوع "عقد رئيسي".'
+                    )
+                if rec.parent_contract_id.project_id != rec.project_id:
+                    raise ValidationError(
+                        'يجب أن يكون الملحق في نفس مشروع العقد الأصلي.'
+                    )
+            if rec.contract_type == 'main' and rec.parent_contract_id:
+                raise ValidationError(
+                    'العقد الرئيسي لا يمكن أن يرتبط بعقد أصلي آخر.'
+                )
+
     @api.constrains('date_start', 'date_end')
     def _check_dates(self):
         for rec in self:
@@ -173,6 +297,67 @@ class ConstructionContract(models.Model):
         self.write({'state': 'draft'})
 
     # ── Smart button actions ──────────────────────────────────────────
+
+    def action_release_retention(self):
+        self.ensure_one()
+        if self.retention_balance <= 0:
+            raise ValidationError(
+                'لا يوجد رصيد ضمان متاح للإفراج.\n'
+                f'إجمالي المحتجز: {self.total_retention_held:,.2f} — '
+                f'المُفرج عنه: {self.retention_released:,.2f}'
+            )
+        next_seq = max(self.payment_line_ids.mapped('sequence') or [0]) + 10
+        self.env['construction.payment.line'].create({
+            'contract_id': self.id,
+            'name': 'إفراج ضمان — Retention Release',
+            'payment_type': 'retention',
+            'amount': self.retention_balance,
+            'sequence': next_seq,
+            'state': 'pending',
+        })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'تم إنشاء طلب إفراج الضمان',
+                'message': (
+                    f'دفعة إفراج ضمان بقيمة {self.retention_balance:,.2f} '
+                    f'{self.currency_id.name or "SAR"} — يمكن تعديل المبلغ قبل التسجيل.'
+                ),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def action_create_amendment(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'ملحق جديد — New Amendment',
+            'res_model': 'construction.contract',
+            'view_mode': 'form',
+            'context': {
+                'default_project_id': self.project_id.id,
+                'default_partner_id': self.partner_id.id,
+                'default_parent_contract_id': self.id,
+                'default_contract_type': 'amendment',
+                'default_retention_percent': self.retention_percent,
+            },
+        }
+
+    def action_view_amendments(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'الملاحق والإضافات',
+            'res_model': 'construction.contract',
+            'view_mode': 'list,form',
+            'domain': [('parent_contract_id', '=', self.id)],
+            'context': {
+                'default_parent_contract_id': self.id,
+                'default_project_id': self.project_id.id,
+            },
+        }
 
     def action_view_certificates(self):
         return {

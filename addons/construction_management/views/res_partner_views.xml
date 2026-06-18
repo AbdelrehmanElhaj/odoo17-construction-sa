@@ -78,6 +78,12 @@
                         <group>
                             <field name="contractor_license"/>
                             <field name="license_expiry"/>
+                            <field name="license_status"
+                                   widget="badge"
+                                   decoration-success="license_status == 'valid'"
+                                   decoration-warning="license_status == 'expiring'"
+                                   decoration-danger="license_status == 'expired'"
+                                   invisible="not license_expiry"/>
                             <field name="retention_percent" string="نسبة الضمان المحتجز %"/>
                         </group>
                     </group>

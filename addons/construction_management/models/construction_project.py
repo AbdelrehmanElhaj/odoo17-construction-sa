@@ -1,3 +1,4 @@
+from datetime import timedelta
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
@@ -88,6 +89,12 @@ class ConstructionProject(models.Model):
     building_permit   = fields.Char(string='رقم رخصة البناء | Building Permit')
     municipality_ref  = fields.Char(string='مرجع البلدية | Municipality Ref')
     permit_expiry     = fields.Date(string='انتهاء الرخصة | Permit Expiry')
+    permit_status     = fields.Selection([
+        ('valid',    'سارية'),
+        ('expiring', 'تنتهي قريباً'),
+        ('expired',  'منتهية'),
+    ], string='حالة الرخصة | Permit Status',
+        compute='_compute_permit_status', store=True)
 
     # ── Financials ────────────────────────────────────────────────────
 
@@ -124,6 +131,20 @@ class ConstructionProject(models.Model):
     certificate_count = fields.Integer(compute='_compute_counts', string='شهادات', store=True)
 
     # ── Computed ──────────────────────────────────────────────────────
+
+    @api.depends('permit_expiry')
+    def _compute_permit_status(self):
+        today = fields.Date.today()
+        warn = today + timedelta(days=60)
+        for rec in self:
+            if not rec.permit_expiry:
+                rec.permit_status = False
+            elif rec.permit_expiry <= today:
+                rec.permit_status = 'expired'
+            elif rec.permit_expiry <= warn:
+                rec.permit_status = 'expiring'
+            else:
+                rec.permit_status = 'valid'
 
     @api.depends('site_building_no', 'site_street', 'site_secondary_no',
                  'site_district', 'city_id', 'region_id', 'site_postal_code')
@@ -203,6 +224,56 @@ class ConstructionProject(models.Model):
             if vals.get('project_code', 'مسودة') == 'مسودة':
                 vals['project_code'] = self.env['ir.sequence'].next_by_code('construction.project') or 'PROJ-NEW'
         return super().create(vals_list)
+
+    # ── Expiry monitoring cron ────────────────────────────────────────
+
+    @api.model
+    def _cron_expiry_alerts(self):
+        today = fields.Date.today()
+        license_warn  = today + timedelta(days=30)
+        permit_warn   = today + timedelta(days=60)
+
+        # ── Contractor licence alerts ─────────────────────────────────
+        expiring_contractors = self.env['res.partner'].search([
+            ('is_contractor', '=', True),
+            ('license_expiry', '!=', False),
+            ('license_expiry', '<=', license_warn),
+        ])
+        for partner in expiring_contractors:
+            if partner.activity_ids.filtered(lambda a: 'ترخيص' in (a.summary or '')):
+                continue
+            is_expired = partner.license_expiry <= today
+            partner.activity_schedule(
+                activity_type_xmlid='mail.mail_activity_data_todo',
+                summary=('ترخيص منتهٍ — License Expired'
+                         if is_expired else 'تجديد الترخيص — Renewal Due'),
+                note=(
+                    f'الترخيص {"منتهٍ" if is_expired else "ينتهي"} بتاريخ '
+                    f'<b>{partner.license_expiry}</b><br/>'
+                    f'رقم الترخيص: {partner.contractor_license or "—"}'
+                ),
+            )
+
+        # ── Building permit alerts ────────────────────────────────────
+        expiring_projects = self.search([
+            ('state', 'not in', ['done', 'cancelled']),
+            ('permit_expiry', '!=', False),
+            ('permit_expiry', '<=', permit_warn),
+        ])
+        for project in expiring_projects:
+            if project.activity_ids.filtered(lambda a: 'رخصة' in (a.summary or '')):
+                continue
+            is_expired = project.permit_expiry <= today
+            project.activity_schedule(
+                activity_type_xmlid='mail.mail_activity_data_todo',
+                summary=('رخصة البناء منتهية — Permit Expired'
+                         if is_expired else 'تجديد رخصة البناء — Permit Renewal'),
+                note=(
+                    f'رخصة البناء {"منتهية" if is_expired else "تنتهي"} بتاريخ '
+                    f'<b>{project.permit_expiry}</b><br/>'
+                    f'رقم الرخصة: {project.building_permit or "—"}'
+                ),
+            )
 
     # ── State transitions ─────────────────────────────────────────────
 

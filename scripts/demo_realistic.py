@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 Realistic demo data for Construction Management (Odoo 17).
-5 projects · 5 contractors · 3 clients · 5 BOQs · 5 contracts
-7 subcontracts · 8 certificates with full workflow progression
+5 projects · 6 contractors (1 with expiring license) · 3 clients
+5 BOQs · 5 main contracts · 1 amendment · 7 subcontracts
+8 certificates with full workflow progression
 """
 import odoo, sys
 
@@ -422,6 +423,34 @@ def run(env):
     c5.action_complete()
     proj5.action_done()
     p('  5 contracts + payment schedules created')
+
+    # ── Contract Amendment (demonstrates amendments feature) ──────────────
+    p('[5b/8] Creating contract amendment...')
+    c1_amend = C.create({
+        'name': 'ملحق عقد - طوابق إضافية أبراج الريان',
+        'contract_type': 'amendment', 'project_id': proj1.id,
+        'partner_id': cont_general.id, 'parent_contract_id': c1.id,
+        'date_signed': '2025-05-15', 'date_start': '2025-06-01', 'date_end': '2026-06-30',
+        'contract_value': 3_500_000.0,
+        'amendment_value': 3_500_000.0,
+        'amendment_reason': 'إضافة طابقين لاستيعاب 20 وحدة سكنية إضافية بناءً على طلب العميل',
+        'retention_percent': 5.0,
+    })
+    c1_amend.action_activate()
+    p('  1 amendment created (effective contract value: 45,500,000 SAR)')
+
+    # ── Partner with expiring license (demonstrates expiry monitoring) ─────
+    cont_expiring = partner({
+        'name': 'شركة الإنشاءات الحديثة المتخصصة', 'is_company': True,
+        'is_contractor': True, 'commercial_registration': '1050901346',
+        'contractor_grade': 'B', 'contractor_type': 'civil',
+        'contractor_license': 'CCL-2019-00012', 'license_expiry': '2026-07-10',
+        'retention_percent': 5.0, 'mobile_sa': '0591234570',
+        'sa_building_no': '7700', 'sa_street_name': 'شارع العروبة',
+        'sa_secondary_no': '8800', 'sa_district': 'حي الروضة',
+        'sa_city_id': c_riyadh.id, 'sa_postal_code': '11421',
+    })
+    p('  1 contractor with expiring license (2026-07-10) created — triggers expiry alert')
 
     # ── Subcontracts ──────────────────────────────────────────────────────
     p('[6/8] Creating subcontracts...')

@@ -28,18 +28,18 @@ running on Docker with Let's Encrypt SSL, nginx reverse proxy, and a custom
 Internet
    │
    ▼
-[Host nginx]  ← systemd service, Let's Encrypt SSL (csm.hdrelhaj.com)
+[Host nginx]  ← systemd service, Let's Encrypt SSL (cms.hdrelhaj.com)
    │  proxy_pass 127.0.0.1:8069
    ▼
-[odoo17 container]  ← custom image built from Dockerfile
+[cms-odoo container]  ← custom image built from Dockerfile
    │  db connection (internal Docker network)
    ▼
-[odoo17-db container]  ← postgres:15
+[cms-db container]  ← postgres:15
 ```
 
 | Component | Details |
 |---|---|
-| Domain | `csm.hdrelhaj.com` |
+| Domain | `cms.hdrelhaj.com` |
 | SSL | Let's Encrypt via host `certbot` + host nginx |
 | Odoo version | 17.0 |
 | Database | PostgreSQL 15, db name `ConstructionDB` |
@@ -88,6 +88,12 @@ a complete Arabic-first construction ERP for the Saudi market.
 - **Dashboard KPIs**: active projects, total contract value, certified amount, overdue payments
 - **Saudi ID validation**: national ID (starts with 1), Iqama (starts with 2), CR (10 digits)
 - **Saudi phone validation**: mobile (`05XXXXXXXX`), work (`01XXXXXXXX`), WhatsApp (`+9665XXXXXXXX`)
+- **Certificate amount validation** — prevents certifying beyond the contract value; also blocks overlapping certificate periods on the same contract
+- **Retention release workflow** — tracks total retention held vs released; "إفراج الضمان" button on active contracts creates a payment line for the outstanding balance
+- **Contract amendments** — amendment and addendum types link to a parent main contract via `parent_contract_id`; delta tracked via `amendment_value`; `effective_contract_value` computed on the main contract
+- **Workflow notifications** — certificate state transitions schedule Odoo To-Do activities for the reviewer (on submit) and accountant (on approve); approval posts a financial summary note in chatter
+- **Expiry monitoring** — `license_status` on contractor partners (30-day window); `permit_status` on projects (60-day window); daily cron auto-schedules activities for expiring/expired records; dashboard row shows 4 expiry KPI cards
+- **Dashboard performance** — KPIs now use `search_count` and `read_group` DB aggregates instead of loading all records into Python memory; "Refresh" button added
 
 ### Security Groups
 
@@ -149,6 +155,7 @@ odoo17-construction-sa/
 │       │   └── ir.model.access.csv       # ACL rules
 │       ├── data/
 │       │   ├── construction_sequences.xml
+│       │   ├── expiry_cron.xml           # Daily cron for license/permit expiry monitoring
 │       │   └── saudi_cities.xml          # All Saudi regions + cities
 │       ├── demo/
 │       │   └── demo_data.xml             # Sample projects, BOQ, contracts, certificates
@@ -174,7 +181,7 @@ odoo17-construction-sa/
 
 - Ubuntu 20.04+ server
 - Docker + docker-compose installed (`./install-docker.sh` if needed)
-- Domain pointed at your server IP (`csm.hdrelhaj.com`)
+- Domain pointed at your server IP (`cms.hdrelhaj.com`)
 
 ### First-time setup
 
@@ -189,13 +196,13 @@ sudo ./setup-ssl.sh
 # 3. Start containers (builds custom Docker image on first run)
 ./start.sh
 
-# 4. Open https://csm.hdrelhaj.com
+# 4. Open https://cms.hdrelhaj.com
 #    Create database: ConstructionDB
 #    Admin password: see config/odoo.conf (admin_passwd)
 
 # 5. Install the construction_management module via Odoo Apps menu
 #    or via CLI:
-sudo docker exec odoo17 odoo -d ConstructionDB \
+sudo docker exec cms-odoo odoo -d ConstructionDB \
     --init construction_management --stop-after-init
 ```
 
@@ -360,7 +367,7 @@ sudo docker-compose restart web
 ### Run with debug logging
 
 ```bash
-sudo docker exec -it odoo17 odoo \
+sudo docker exec -it cms-odoo odoo \
     --config=/etc/odoo/odoo.conf \
     --database=ConstructionDB \
     --log-level=debug \
@@ -370,7 +377,7 @@ sudo docker exec -it odoo17 odoo \
 ### Python shell access
 
 ```bash
-sudo docker exec -it odoo17 odoo shell \
+sudo docker exec -it cms-odoo odoo shell \
     --config=/etc/odoo/odoo.conf \
     --database=ConstructionDB
 ```
@@ -392,13 +399,13 @@ the PO file supplements rather than replaces them.
 
 To regenerate translations from current model/view definitions:
 ```bash
-sudo docker exec odoo17 odoo \
+sudo docker exec cms-odoo odoo \
     -d ConstructionDB \
     --i18n-export /tmp/construction_management_ar.po \
     --language ar_SA \
     --modules construction_management \
     --stop-after-init
-sudo docker cp odoo17:/tmp/construction_management_ar.po \
+sudo docker cp cms-odoo:/tmp/construction_management_ar.po \
     addons/construction_management/i18n/ar.po
 ```
 
@@ -420,20 +427,20 @@ ls -lh backups/
 ./stop.sh
 
 # 2. Drop and recreate the database
-sudo docker start odoo17-db
-sudo docker exec -e PGPASSWORD=odoo17 odoo17-db \
+sudo docker start cms-db
+sudo docker exec -e PGPASSWORD=odoo17 cms-db \
     dropdb -U odoo17 ConstructionDB
-sudo docker exec -e PGPASSWORD=odoo17 odoo17-db \
+sudo docker exec -e PGPASSWORD=odoo17 cms-db \
     createdb -U odoo17 ConstructionDB
 
 # 3. Restore PostgreSQL dump
 gunzip -c backups/db_ConstructionDB_TIMESTAMP.sql.gz | \
-sudo docker exec -i -e PGPASSWORD=odoo17 odoo17-db \
+sudo docker exec -i -e PGPASSWORD=odoo17 cms-db \
     psql -U odoo17 ConstructionDB
 
 # 4. Restore filestore
-sudo docker start odoo17
-sudo docker exec -i odoo17 \
+sudo docker start cms-odoo
+sudo docker exec -i cms-odoo \
     tar -xzf - -C / < backups/filestore_TIMESTAMP.tar.gz
 
 # 5. Start everything
@@ -456,11 +463,11 @@ crontab -e
 
 ```bash
 # Check container logs
-sudo docker logs odoo17 2>&1 | tail -30
+sudo docker logs cms-odoo 2>&1 | tail -30
 # Check Odoo application log
 tail -50 logs/odoo.log
 # Verify database is reachable
-sudo docker exec odoo17-db pg_isready -U odoo17
+sudo docker exec cms-db pg_isready -U odoo17
 ```
 
 ### HTTP 502 Bad Gateway from nginx
@@ -471,7 +478,7 @@ The host nginx proxies to `127.0.0.1:8069`. Check:
 # Is Odoo listening on 8069?
 sudo ss -tlnp | grep 8069
 # Is the container running?
-sudo docker ps | grep odoo17
+sudo docker ps | grep cms-odoo
 # Direct test (bypasses nginx)
 curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8069/web/login
 ```
@@ -486,7 +493,7 @@ sudo docker-compose up -d web
 ```bash
 # Refresh module list from inside Odoo: Settings → Apps → Update Apps List
 # Or via CLI:
-sudo docker exec odoo17 odoo \
+sudo docker exec cms-odoo odoo \
     -d ConstructionDB \
     --update base \
     --stop-after-init
@@ -521,7 +528,7 @@ sudo docker-compose restart web
 ```bash
 # Check expiry
 sudo openssl x509 -enddate -noout \
-    -in /etc/letsencrypt/live/csm.hdrelhaj.com/fullchain.pem
+    -in /etc/letsencrypt/live/cms.hdrelhaj.com/fullchain.pem
 # Renew manually
 sudo ./renew-ssl.sh
 # Or force renewal

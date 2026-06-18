@@ -26,6 +26,12 @@
                     <button name="action_reset_draft" string="إعادة للمسودة"
                             type="object"
                             invisible="state not in ('cancelled', 'terminated')"/>
+                    <button name="action_create_amendment" string="إنشاء ملحق"
+                            type="object" icon="fa-plus"
+                            invisible="state != 'active' or contract_type != 'main'"/>
+                    <button name="action_release_retention" string="إفراج الضمان"
+                            type="object" icon="fa-unlock"
+                            invisible="state not in ('active', 'completed') or retention_balance &lt;= 0"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,active,completed"/>
                 </header>
@@ -44,6 +50,12 @@
                                 invisible="subcontract_count == 0">
                             <field name="subcontract_count" widget="statinfo"
                                    string="مقاول باطن"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-file-text-o"
+                                type="object" name="action_view_amendments"
+                                invisible="amendment_count == 0">
+                            <field name="amendment_count" widget="statinfo"
+                                   string="ملاحق"/>
                         </button>
                         <div class="oe_stat_button" icon="fa-calendar-check-o">
                             <div class="o_stat_info">
@@ -84,21 +96,46 @@
                         </group>
                     </group>
 
+                    <!-- Amendment link (visible for amendment/addendum types) -->
+                    <group invisible="contract_type == 'main'">
+                        <group string="ربط بالعقد الأصلي | Link to Parent">
+                            <field name="parent_contract_id"/>
+                            <field name="amendment_reason"/>
+                        </group>
+                        <group string="قيمة التعديل | Amendment Value">
+                            <field name="amendment_value"/>
+                        </group>
+                    </group>
+
                     <!-- Financial summary -->
                     <group>
                         <group string="القيمة المالية">
                             <field name="currency_id"/>
                             <field name="contract_value"/>
+                            <field name="total_amendments_value" readonly="1"
+                                   invisible="contract_type != 'main'"/>
+                            <field name="effective_contract_value" readonly="1"
+                                   invisible="contract_type != 'main'"/>
                             <field name="retention_percent"/>
                             <field name="retention_amount" readonly="1"/>
                             <field name="advance_percent"/>
                             <field name="advance_amount" readonly="1"/>
                         </group>
                         <group string="متابعة الدفعات">
-                            <field name="total_scheduled" readonly="1"/>
-                            <field name="total_paid"      readonly="1"/>
-                            <field name="balance_due"     readonly="1"/>
+                            <field name="total_scheduled"       readonly="1"/>
+                            <field name="total_paid"            readonly="1"/>
+                            <field name="balance_due"           readonly="1"/>
+                            <field name="total_certified"       readonly="1"/>
+                            <field name="remaining_to_certify"  readonly="1"/>
                             <field name="payment_terms_notes"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="متابعة الضمان | Retention Tracking">
+                            <field name="total_retention_held"  readonly="1"/>
+                            <field name="retention_released"    readonly="1"/>
+                            <field name="retention_balance"     readonly="1"/>
                         </group>
                     </group>
 

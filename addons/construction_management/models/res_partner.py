@@ -64,6 +64,12 @@ class ResPartner(models.Model):
     ], string='درجة الترخيص | Grade')
     contractor_license = fields.Char(string='رقم الترخيص المهني | License No.')
     license_expiry     = fields.Date(string='تاريخ انتهاء الترخيص | License Expiry')
+    license_status     = fields.Selection([
+        ('valid',    'ساري'),
+        ('expiring', 'ينتهي قريباً'),
+        ('expired',  'منتهي'),
+    ], string='حالة الترخيص | License Status',
+        compute='_compute_license_status', store=True)
     contractor_type    = fields.Selection([
         ('general',   'مقاول عام — General'),
         ('civil',     'أعمال مدنية — Civil'),
@@ -90,6 +96,19 @@ class ResPartner(models.Model):
                 rec.saudi_id_status = 'expiring'
             else:
                 rec.saudi_id_status = 'valid'
+
+    @api.depends('license_expiry')
+    def _compute_license_status(self):
+        today = date.today()
+        for rec in self:
+            if not rec.license_expiry:
+                rec.license_status = False
+            elif rec.license_expiry <= today:
+                rec.license_status = 'expired'
+            elif rec.license_expiry <= today + timedelta(days=30):
+                rec.license_status = 'expiring'
+            else:
+                rec.license_status = 'valid'
 
     @api.depends('sa_city_id')
     def _compute_sa_region(self):
