@@ -20,12 +20,7 @@ def main():
         try:
             run(env)
             cr.commit()
-            # ── Admin group ───────────────────────────────────────────────────────
-    group = env.ref('construction_management.group_construction_manager')
-    env['res.users'].browse(2).write({'groups_id': [(4, group.id)]})
-    p('  Admin assigned to Construction Manager group')
-
-    p('\n✓ Realistic demo data loaded.')
+            p('\n✓ Realistic demo data loaded.')
         except Exception as e:
             cr.rollback()
             import traceback; traceback.print_exc()
@@ -584,6 +579,12 @@ def run(env):
         p(f"    State: {proj.state:<10} | Contract: {cont.contract_value:>15,.0f} SAR")
         p(f"    Paid:  {cont.total_paid:>15,.0f} SAR | Progress: {proj.progress_percent:.1f}%")
         p(f"    Certs: {state_str}")
+
+    # ── Admin group ───────────────────────────────────────────────────────
+    p('\n[+] Assigning admin to Construction Manager group...')
+    group = env.ref('construction_management.group_construction_manager')
+    env['res.users'].browse(2).write({'groups_id': [(4, group.id)]})
+    p('  Done')
 
 if __name__ == '__main__':
     main()
