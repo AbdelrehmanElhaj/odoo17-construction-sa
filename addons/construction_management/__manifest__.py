@@ -20,7 +20,7 @@ Features:
     'author': 'Abdelrehman Elhaj',
     'website': 'https://github.com/AbdelrehmanElhaj',
     'license': 'LGPL-3',
-    'depends': ['base', 'mail', 'uom'],
+    'depends': ['base', 'mail', 'uom', 'web'],
     'demo': [
         'demo/demo_data.xml',
     ],
@@ -39,10 +39,16 @@ Features:
         'views/construction_certificate_views.xml',
         'views/construction_dashboard_views.xml',
         'views/menus.xml',
+        'views/login_template.xml',
         'reports/report_certificate.xml',
         'reports/report_boq.xml',
         'reports/report_contract.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'construction_management/static/src/css/login.css',
+        ],
+    },
     'installable': True,
     'application': True,
     'auto_install': False,

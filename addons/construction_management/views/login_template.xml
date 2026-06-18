@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Override web.login_layout to replace the plain login card with a
+        split-screen landing page: branding panel on the left, login form
+        on the right.
+    -->
+    <template id="construction_login_layout"
+              inherit_id="web.login_layout"
+              name="Construction Management Login Layout">
+
+        <!-- Replace the default centered card container -->
+        <xpath expr="//div[hasclass('container')]" position="replace">
+            <div class="cms-login-wrapper">
+
+                <!-- ═══════════════════════════════════════════
+                     LEFT — Branding / Landing Panel
+                ═══════════════════════════════════════════ -->
+                <div class="cms-brand-panel">
+                    <div class="cms-brand-inner">
+
+                        <div class="cms-brand-logo">
+                            <img src="/construction_management/static/description/icon.png"
+                                 alt="CMS Icon"
+                                 class="cms-icon"/>
+                        </div>
+
+                        <h1 class="cms-title-ar">نظام إدارة المقاولات</h1>
+                        <h2 class="cms-title-en">Construction Management System</h2>
+
+                        <p class="cms-tagline">
+                            نظام متكامل لإدارة مشاريع المقاولات في السوق السعودي
+                        </p>
+
+                        <ul class="cms-features">
+                            <li>
+                                <i class="fa fa-building-o"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">إدارة المشاريع والمواقع</span>
+                                    <span class="cms-feat-en">Project &amp; Site Management</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fa fa-list-alt"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">جداول الكميات — استيراد Excel</span>
+                                    <span class="cms-feat-en">BOQ &amp; Excel Import</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fa fa-file-text-o"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">العقود والمستخلصات والملاحق</span>
+                                    <span class="cms-feat-en">Contracts, Certificates &amp; Amendments</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fa fa-qrcode"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">رمز QR متوافق مع الزاتكا</span>
+                                    <span class="cms-feat-en">ZATCA Phase 1 QR Code</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fa fa-map-marker"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">العنوان الوطني السعودي</span>
+                                    <span class="cms-feat-en">Saudi National Address</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fa fa-shield"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">إفراج الضمان المحتجز</span>
+                                    <span class="cms-feat-en">Retention Release Workflow</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fa fa-bell-o"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">مراقبة التراخيص والتصاريح</span>
+                                    <span class="cms-feat-en">License &amp; Permit Expiry Alerts</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fa fa-tachometer"/>
+                                <div class="cms-feat-text">
+                                    <span class="cms-feat-ar">لوحة متابعة آنية عالية الأداء</span>
+                                    <span class="cms-feat-en">Real-time Performance Dashboard</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="cms-brand-footer">
+                        cms.hdrelhaj.com
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════
+                     RIGHT — Login Panel
+                ═══════════════════════════════════════════ -->
+                <div class="cms-form-panel">
+                    <div class="cms-form-card">
+
+                        <div class="text-center">
+                            <img t-attf-src="/web/binary/company_logo{{ '?dbname='+db if db else '' }}"
+                                 alt="Logo"
+                                 class="cms-company-logo"/>
+                        </div>
+
+                        <h3 class="cms-form-title text-center">تسجيل الدخول</h3>
+                        <p class="cms-form-subtitle text-center text-muted">
+                            Sign in to your account
+                        </p>
+
+                        <!-- Login form content injected here by web.login -->
+                        <t t-out="0"/>
+
+                        <div class="cms-form-footer text-center" t-if="not disable_footer">
+                            <t t-if="not disable_database_manager">
+                                <a href="/web/database/manager">Manage Databases</a>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </xpath>
+    </template>
+
+</odoo>
