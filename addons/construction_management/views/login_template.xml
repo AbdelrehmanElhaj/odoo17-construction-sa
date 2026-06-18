@@ -12,10 +12,10 @@
 
         <!-- Replace the default centered card container -->
         <xpath expr="//div[hasclass('container')]" position="replace">
-            <div class="cms-login-wrapper">
+            <div class="cms-login-wrapper" dir="rtl">
 
                 <!-- ═══════════════════════════════════════════
-                     LEFT — Branding / Landing Panel
+                     In RTL: this panel appears on the RIGHT
                 ═══════════════════════════════════════════ -->
                 <div class="cms-brand-panel">
                     <div class="cms-brand-inner">

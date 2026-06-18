@@ -173,7 +173,7 @@ body.bg-100 #wrapwrap > main {
 }
 
 /* ════════════════════════════════════════════════════════
-   RIGHT — Login Panel
+   LEFT in RTL — Login Panel
    ════════════════════════════════════════════════════════ */
 .cms-form-panel {
     flex: 1;
@@ -206,11 +206,18 @@ body.bg-100 #wrapwrap > main {
     color: #1B3A5C;
     margin-bottom: .25rem;
     direction: rtl;
+    text-align: right;
 }
 
 .cms-form-subtitle {
     font-size: .82rem;
     margin-bottom: 1.75rem;
+    direction: ltr; /* English subtitle stays LTR */
+}
+
+/* ── RTL form card — flip direction for the card content ── */
+.cms-form-card {
+    direction: rtl;
 }
 
 /* ── Input styling ─── */
@@ -218,6 +225,8 @@ body.bg-100 #wrapwrap > main {
     font-weight: 500;
     color: #374151;
     font-size: .85rem;
+    display: block;
+    text-align: right;
 }
 
 .cms-form-card .oe_login_form .form-control {
@@ -225,6 +234,8 @@ body.bg-100 #wrapwrap > main {
     border: 1.5px solid #e2e8f0;
     padding: .6rem .9rem;
     font-size: .9rem;
+    direction: ltr;       /* email/password are LTR values */
+    text-align: left;
     transition: border-color .2s, box-shadow .2s;
 }
 
