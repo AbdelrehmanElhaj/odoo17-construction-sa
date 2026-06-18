@@ -3,16 +3,33 @@
    Login / Landing Page Styles
    ============================================================ */
 
-/* Full-height body */
-html, body.bg-100 {
+/* Full-height body + intermediate Odoo wrappers */
+html,
+body.bg-100,
+body.bg-100 #wrapwrap,
+body.bg-100 #wrapwrap > main {
     height: 100% !important;
+    min-height: 100% !important;
     margin: 0;
-    padding: 0;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+body.bg-100 #wrapwrap {
+    display: flex;
+    flex-direction: column;
+}
+
+body.bg-100 #wrapwrap > main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ── Wrapper: two-column split ─────────────────────────── */
 .cms-login-wrapper {
     display: flex;
+    flex: 1;
     min-height: 100vh;
     width: 100%;
 }
