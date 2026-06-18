@@ -20,7 +20,12 @@ def main():
         try:
             run(env)
             cr.commit()
-            p('\n✓ Realistic demo data loaded.')
+            # ── Admin group ───────────────────────────────────────────────────────
+    group = env.ref('construction_management.group_construction_manager')
+    env['res.users'].browse(2).write({'groups_id': [(4, group.id)]})
+    p('  Admin assigned to Construction Manager group')
+
+    p('\n✓ Realistic demo data loaded.')
         except Exception as e:
             cr.rollback()
             import traceback; traceback.print_exc()
