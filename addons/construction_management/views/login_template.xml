@@ -2,20 +2,21 @@
 <odoo>
 
     <!--
-        Override web.login_layout to replace the plain login card with a
-        split-screen landing page: branding panel on the left, login form
-        on the right.
+        Override web.login_layout: split-screen landing page.
+        dir="rtl" on the wrapper drives RTL via HTML attribute (not CSS),
+        so Odoo's RTL CSS bundle cannot flip it.
+        - Right side (first child in RTL flex row): branding panel
+        - Left side (second child in RTL flex row): login form
     -->
     <template id="construction_login_layout"
               inherit_id="web.login_layout"
               name="Construction Management Login Layout">
 
-        <!-- Replace the default centered card container -->
         <xpath expr="//div[hasclass('container')]" position="replace">
             <div class="cms-login-wrapper" dir="rtl">
 
                 <!-- ═══════════════════════════════════════════
-                     In RTL: this panel appears on the RIGHT
+                     Branding panel — appears on the RIGHT in RTL
                 ═══════════════════════════════════════════ -->
                 <div class="cms-brand-panel">
                     <div class="cms-brand-inner">
@@ -27,7 +28,8 @@
                         </div>
 
                         <h1 class="cms-title-ar">نظام إدارة المقاولات</h1>
-                        <h2 class="cms-title-en">Construction Management System</h2>
+                        <!-- English subtitle: force LTR so it isn't mirrored -->
+                        <h2 class="cms-title-en" dir="ltr">Construction Management System</h2>
 
                         <p class="cms-tagline">
                             نظام متكامل لإدارة مشاريع المقاولات في السوق السعودي
@@ -38,68 +40,69 @@
                                 <i class="fa fa-building-o"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">إدارة المشاريع والمواقع</span>
-                                    <span class="cms-feat-en">Project &amp; Site Management</span>
+                                    <span class="cms-feat-en" dir="ltr">Project &amp; Site Management</span>
                                 </div>
                             </li>
                             <li>
                                 <i class="fa fa-list-alt"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">جداول الكميات — استيراد Excel</span>
-                                    <span class="cms-feat-en">BOQ &amp; Excel Import</span>
+                                    <span class="cms-feat-en" dir="ltr">BOQ &amp; Excel Import</span>
                                 </div>
                             </li>
                             <li>
                                 <i class="fa fa-file-text-o"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">العقود والمستخلصات والملاحق</span>
-                                    <span class="cms-feat-en">Contracts, Certificates &amp; Amendments</span>
+                                    <span class="cms-feat-en" dir="ltr">Contracts, Certificates &amp; Amendments</span>
                                 </div>
                             </li>
                             <li>
                                 <i class="fa fa-qrcode"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">رمز QR متوافق مع الزاتكا</span>
-                                    <span class="cms-feat-en">ZATCA Phase 1 QR Code</span>
+                                    <span class="cms-feat-en" dir="ltr">ZATCA Phase 1 QR Code</span>
                                 </div>
                             </li>
                             <li>
                                 <i class="fa fa-map-marker"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">العنوان الوطني السعودي</span>
-                                    <span class="cms-feat-en">Saudi National Address</span>
+                                    <span class="cms-feat-en" dir="ltr">Saudi National Address</span>
                                 </div>
                             </li>
                             <li>
                                 <i class="fa fa-shield"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">إفراج الضمان المحتجز</span>
-                                    <span class="cms-feat-en">Retention Release Workflow</span>
+                                    <span class="cms-feat-en" dir="ltr">Retention Release Workflow</span>
                                 </div>
                             </li>
                             <li>
                                 <i class="fa fa-bell-o"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">مراقبة التراخيص والتصاريح</span>
-                                    <span class="cms-feat-en">License &amp; Permit Expiry Alerts</span>
+                                    <span class="cms-feat-en" dir="ltr">License &amp; Permit Expiry Alerts</span>
                                 </div>
                             </li>
                             <li>
                                 <i class="fa fa-tachometer"/>
                                 <div class="cms-feat-text">
                                     <span class="cms-feat-ar">لوحة متابعة آنية عالية الأداء</span>
-                                    <span class="cms-feat-en">Real-time Performance Dashboard</span>
+                                    <span class="cms-feat-en" dir="ltr">Real-time Performance Dashboard</span>
                                 </div>
                             </li>
                         </ul>
                     </div>
 
-                    <div class="cms-brand-footer">
+                    <!-- Domain name: always LTR regardless of page direction -->
+                    <div class="cms-brand-footer" dir="ltr">
                         cms.hdrelhaj.com
                     </div>
                 </div>
 
                 <!-- ═══════════════════════════════════════════
-                     RIGHT — Login Panel
+                     Login panel — appears on the LEFT in RTL
                 ═══════════════════════════════════════════ -->
                 <div class="cms-form-panel">
                     <div class="cms-form-card">
@@ -110,8 +113,9 @@
                                  class="cms-company-logo"/>
                         </div>
 
-                        <h3 class="cms-form-title text-center">تسجيل الدخول</h3>
-                        <p class="cms-form-subtitle text-center text-muted">
+                        <h3 class="cms-form-title">تسجيل الدخول</h3>
+                        <!-- English subtitle: explicit ltr -->
+                        <p class="cms-form-subtitle text-muted" dir="ltr">
                             Sign in to your account
                         </p>
 
@@ -120,7 +124,7 @@
 
                         <div class="cms-form-footer text-center" t-if="not disable_footer">
                             <t t-if="not disable_database_manager">
-                                <a href="/web/database/manager">Manage Databases</a>
+                                <a href="/web/database/manager">إدارة قواعد البيانات</a>
                             </t>
                         </div>
                     </div>

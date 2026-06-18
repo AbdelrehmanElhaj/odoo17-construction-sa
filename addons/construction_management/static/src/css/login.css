@@ -1,6 +1,10 @@
 /* ============================================================
    CMS — Construction Management System
    Login / Landing Page Styles
+
+   RTL STRATEGY: All RTL direction is driven by HTML dir="rtl"
+   on the wrapper div. We never set CSS `direction` explicitly
+   because Odoo's RTL bundle flips those values automatically.
    ============================================================ */
 
 /* Full-height body + intermediate Odoo wrappers */
@@ -27,6 +31,9 @@ body.bg-100 #wrapwrap > main {
 }
 
 /* ── Wrapper: two-column split ─────────────────────────── */
+/* dir="rtl" on this element reverses the flex row so that:
+   first child (brand panel) → appears on the RIGHT
+   second child (form panel)  → appears on the LEFT             */
 .cms-login-wrapper {
     display: flex;
     flex: 1;
@@ -35,7 +42,7 @@ body.bg-100 #wrapwrap > main {
 }
 
 /* ════════════════════════════════════════════════════════
-   LEFT — Branding Panel
+   Branding Panel — right side in RTL
    ════════════════════════════════════════════════════════ */
 .cms-brand-panel {
     flex: 0 0 55%;
@@ -71,12 +78,10 @@ body.bg-100 #wrapwrap > main {
     pointer-events: none;
 }
 
-/* ── Brand inner content (RTL) ─── */
+/* Brand inner: RTL inherited from parent dir="rtl" — no CSS direction needed */
 .cms-brand-inner {
     position: relative;
     z-index: 1;
-    direction: rtl;
-    text-align: right;
 }
 
 .cms-brand-logo {
@@ -133,6 +138,7 @@ body.bg-100 #wrapwrap > main {
     border-bottom: none;
 }
 
+/* Icon: in RTL flex row, appears on the start (right) side */
 .cms-features li .fa {
     color: #C9973A;
     font-size: .95rem;
@@ -159,11 +165,10 @@ body.bg-100 #wrapwrap > main {
     color: rgba(255,255,255,.38);
 }
 
-/* ── Brand footer ─── */
+/* Brand footer: dir="ltr" set in HTML — no CSS direction needed */
 .cms-brand-footer {
     position: relative;
     z-index: 1;
-    direction: ltr;
     text-align: center;
     color: rgba(255,255,255,.25);
     font-size: .78rem;
@@ -173,7 +178,7 @@ body.bg-100 #wrapwrap > main {
 }
 
 /* ════════════════════════════════════════════════════════
-   LEFT in RTL — Login Panel
+   Login Panel — left side in RTL
    ════════════════════════════════════════════════════════ */
 .cms-form-panel {
     flex: 1;
@@ -191,6 +196,7 @@ body.bg-100 #wrapwrap > main {
     padding: 2.75rem 2.25rem 2rem;
     width: 100%;
     max-width: 390px;
+    /* RTL inherited from parent dir="rtl" — no CSS direction needed */
 }
 
 .cms-company-logo {
@@ -205,19 +211,13 @@ body.bg-100 #wrapwrap > main {
     font-weight: 700;
     color: #1B3A5C;
     margin-bottom: .25rem;
-    direction: rtl;
-    text-align: right;
+    /* text-align inherits from dir="rtl" — no override needed */
 }
 
 .cms-form-subtitle {
     font-size: .82rem;
     margin-bottom: 1.75rem;
-    direction: ltr; /* English subtitle stays LTR */
-}
-
-/* ── RTL form card — flip direction for the card content ── */
-.cms-form-card {
-    direction: rtl;
+    /* dir="ltr" set in HTML for this English element */
 }
 
 /* ── Input styling ─── */
@@ -226,7 +226,6 @@ body.bg-100 #wrapwrap > main {
     color: #374151;
     font-size: .85rem;
     display: block;
-    text-align: right;
 }
 
 .cms-form-card .oe_login_form .form-control {
@@ -234,9 +233,8 @@ body.bg-100 #wrapwrap > main {
     border: 1.5px solid #e2e8f0;
     padding: .6rem .9rem;
     font-size: .9rem;
-    direction: ltr;       /* email/password are LTR values */
-    text-align: left;
     transition: border-color .2s, box-shadow .2s;
+    /* email & password values are inherently LTR — browsers handle this */
 }
 
 .cms-form-card .oe_login_form .form-control:focus {
@@ -253,7 +251,6 @@ body.bg-100 #wrapwrap > main {
     padding: .65rem;
     font-weight: 600;
     font-size: .9rem;
-    letter-spacing: .2px;
     transition: background .2s, border-color .2s, transform .15s, box-shadow .2s;
 }
 
@@ -302,6 +299,7 @@ body.bg-100 #wrapwrap > main {
 }
 
 @media (max-width: 700px) {
+    /* Stack vertically on mobile — branding on top, form below */
     .cms-login-wrapper {
         flex-direction: column;
     }
@@ -321,8 +319,6 @@ body.bg-100 #wrapwrap > main {
 }
 
 @media (max-width: 420px) {
-    .cms-brand-panel {
-        padding: 1.5rem;
-    }
-    .cms-brand-footer { display: none; }
+    .cms-brand-panel  { padding: 1.5rem; }
+    .cms-brand-footer { display: none;   }
 }
