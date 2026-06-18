@@ -1,91 +1,96 @@
 #!/bin/bash
-# Obtain a browser-trusted Let's Encrypt certificate via nip.io.
-# nip.io resolves <IP>.nip.io → <IP>, so no domain purchase is needed.
+# Obtain a Let's Encrypt certificate using host certbot (webroot method).
+# Requires: certbot installed, nginx running, port 80 open.
 #
 # Usage:
-#   ./setup-ssl.sh                  # auto-detect public IP
-#   ./setup-ssl.sh 16.16.212.220    # explicit IP
+#   ./setup-ssl.sh                          # use default domain csm.hdrelhaj.com
+#   ./setup-ssl.sh yourdomain.com           # use custom domain
 #   LETSENCRYPT_EMAIL=you@example.com ./setup-ssl.sh
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-cd "$ROOT"
-COMPOSE="$(bash "$ROOT/.compose")"
 
-PUBLIC_IP="${1:-$(curl -sf --max-time 10 ifconfig.me)}"
-DOMAIN="${PUBLIC_IP}.nip.io"
+DOMAIN="${1:-csm.hdrelhaj.com}"
 EMAIL="${LETSENCRYPT_EMAIL:-a.elhaj@proptech.sa}"
-CERT_DIR="$ROOT/config/certbot/certs"
-WWW_DIR="$ROOT/config/certbot/www"
+WEBROOT="/var/www/certbot"
 
 echo "=========================================="
-echo "  Propza SSL — Let's Encrypt via nip.io"
+echo "  SSL Setup — Let's Encrypt (host certbot)"
 echo "  Domain: $DOMAIN"
 echo "  Email:  $EMAIL"
 echo "=========================================="
 echo ""
 
+# Verify certbot is installed
+if ! command -v certbot &> /dev/null; then
+    echo "ERROR: certbot not installed."
+    echo "  Install with: sudo apt-get install -y certbot python3-certbot-nginx"
+    exit 1
+fi
+
 # Verify nginx is running
-if ! docker ps --format '{{.Names}}' | grep -q '^odoo17-nginx$'; then
-    echo "ERROR: nginx is not running. Run ./start.sh first." >&2
+if ! systemctl is-active --quiet nginx; then
+    echo "ERROR: nginx is not running. Start it first: sudo systemctl start nginx"
     exit 1
 fi
 
-mkdir -p "$WWW_DIR/.well-known/acme-challenge" "$CERT_DIR"
+# Create webroot for ACME challenge
+sudo mkdir -p "$WEBROOT/.well-known/acme-challenge"
 
-# Verify HTTP challenge is reachable (Let's Encrypt will check this)
-echo "test-$(date +%s)" > "$WWW_DIR/.well-known/acme-challenge/test.txt"
-HTTP_CODE="$(curl -sf --max-time 5 "http://$DOMAIN/.well-known/acme-challenge/test.txt" -o /dev/null -w '%{http_code}' || echo '000')"
-rm -f "$WWW_DIR/.well-known/acme-challenge/test.txt"
+# Test HTTP challenge reachability
+CHALLENGE_FILE="$WEBROOT/.well-known/acme-challenge/test-$(date +%s)"
+echo "ok" | sudo tee "$CHALLENGE_FILE" > /dev/null
+HTTP_CODE="$(curl -sf --max-time 10 "http://$DOMAIN/.well-known/acme-challenge/$(basename "$CHALLENGE_FILE")" \
+    -o /dev/null -w '%{http_code}' 2>/dev/null || echo '000')"
+sudo rm -f "$CHALLENGE_FILE"
+
 if [ "$HTTP_CODE" != "200" ]; then
-    echo "ERROR: HTTP challenge path is not reachable (got HTTP $HTTP_CODE)."
-    echo "Make sure port 80 is open in your firewall/security group and"
-    echo "http://$DOMAIN/.well-known/acme-challenge/ is served by nginx."
+    echo "ERROR: ACME challenge path not reachable (HTTP $HTTP_CODE)."
+    echo "  Ensure port 80 is open and nginx serves /.well-known/acme-challenge/ from $WEBROOT"
     exit 1
 fi
-echo "HTTP challenge path verified (HTTP $HTTP_CODE)."
+echo "HTTP challenge verified (HTTP $HTTP_CODE)"
 echo ""
 
-# Obtain certificate (--entrypoint overrides the renewal-loop entrypoint in docker-compose.yml)
+# Check if cert already exists
+CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+if sudo test -f "$CERT"; then
+    EXPIRY=$(sudo openssl x509 -enddate -noout -in "$CERT" 2>/dev/null | cut -d= -f2)
+    DAYS_LEFT=$(( ( $(date -d "$EXPIRY" +%s) - $(date +%s) ) / 86400 ))
+    echo "Certificate already exists — expires in ${DAYS_LEFT} days ($EXPIRY)."
+    echo "To force renewal: sudo certbot renew --force-renewal --cert-name $DOMAIN"
+    echo "To run renewal:   ./renew-ssl.sh"
+    exit 0
+fi
+
 echo "Requesting certificate from Let's Encrypt..."
-$COMPOSE run --rm --entrypoint certbot certbot certonly \
+sudo certbot certonly \
     --webroot \
-    --webroot-path /var/www/certbot \
+    --webroot-path "$WEBROOT" \
     --domain "$DOMAIN" \
     --email "$EMAIL" \
     --agree-tos \
     --no-eff-email \
     --non-interactive
 
-# Install certificate into nginx's cert dir (certbot writes as root, so sudo needed)
-echo "Installing certificate..."
-sudo cp "$CERT_DIR/live/$DOMAIN/fullchain.pem" "$ROOT/config/certs/nginx.crt"
-sudo cp "$CERT_DIR/live/$DOMAIN/privkey.pem"   "$ROOT/config/certs/nginx.key"
-sudo chown "$(id -u):$(id -g)" "$ROOT/config/certs/nginx.crt" "$ROOT/config/certs/nginx.key"
+# Update nginx site config to reference the new cert
+NGINX_CONF="/etc/nginx/sites-available/odoo"
+if sudo grep -q "ssl_certificate" "$NGINX_CONF"; then
+    sudo sed -i "s|ssl_certificate .*|ssl_certificate     /etc/letsencrypt/live/$DOMAIN/fullchain.pem;|" "$NGINX_CONF"
+    sudo sed -i "s|ssl_certificate_key .*|ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;|" "$NGINX_CONF"
+    echo "Updated $NGINX_CONF with new cert paths."
+fi
 
-# Update server_name in nginx.conf (replaces _ wildcard with actual domain)
-sed -i "s/server_name _;\(.*ssl\)/server_name $DOMAIN;\1/" "$ROOT/config/nginx.conf"
-# Also update the HTTP server block
-sed -i "/listen 80/,/}/s/server_name _;/server_name $DOMAIN;/" "$ROOT/config/nginx.conf"
+sudo nginx -t && sudo systemctl reload nginx
 
-# Reload nginx with new certificate
-docker exec odoo17-nginx nginx -s reload
-
-# Persist the domain so renew-ssl.sh can find it
-echo "$DOMAIN" > "$ROOT/config/certbot/domain"
-
-echo ""
-echo "=========================================="
-echo "  ✓ Trusted HTTPS is live!"
-echo "  URL: https://$DOMAIN"
-echo "=========================================="
-echo ""
-echo "Auto-renewal: the certbot container renews every 12 hours when < 30 days remain."
-echo "Manual renewal: ./renew-ssl.sh"
-echo ""
-
-# Set up host-level cron for renewal (runs weekly)
+# Add weekly renewal cron
 CRON_CMD="0 3 * * 1 cd $ROOT && bash renew-ssl.sh >> $ROOT/logs/ssl-renew.log 2>&1"
-( crontab -l 2>/dev/null | grep -v "renew-ssl.sh"; echo "$CRON_CMD" ) | crontab -
+( sudo crontab -l 2>/dev/null | grep -v "renew-ssl.sh"; echo "$CRON_CMD" ) | sudo crontab -
 echo "Weekly renewal cron added (Mondays 03:00)."
+
+echo ""
+echo "=========================================="
+echo "  HTTPS is live: https://$DOMAIN"
+echo "  Renewal script: ./renew-ssl.sh"
+echo "=========================================="

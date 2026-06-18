@@ -5,18 +5,25 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
 MODULE="${1:-construction_management}"
 DB="ConstructionDB"
 CONTAINER="odoo17"
-LOG="/home/ubuntu/odoo17-construction-sa/logs/odoo.log"
+LOG="$ROOT_DIR/logs/odoo.log"
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Upgrading module: $MODULE on DB: $DB"
 
-docker exec "$CONTAINER" \
+sudo docker exec "$CONTAINER" \
     odoo -d "$DB" \
          --update="$MODULE" \
          --stop-after-init \
-         1>/proc/1/fd/1 2>/proc/1/fd/2
+         --log-level info
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Upgrade complete. Last 10 log lines:"
-tail -10 "$LOG"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Upgrade complete."
+
+if [ -f "$LOG" ]; then
+    echo "Last 10 log lines:"
+    tail -10 "$LOG"
+fi

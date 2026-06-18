@@ -44,7 +44,7 @@ check_disk
 # 1 — PostgreSQL dump
 DB_FILE="$BACKUP_DIR/db_${DB_NAME}_${TIMESTAMP}.sql.gz"
 log "Dumping database $DB_NAME → $(basename "$DB_FILE")"
-docker exec -e PGPASSWORD="$DB_PASS" "$DB_CONTAINER" \
+sudo docker exec -e PGPASSWORD="$DB_PASS" "$DB_CONTAINER" \
     pg_dump -U "$DB_USER" "$DB_NAME" \
     | gzip > "$DB_FILE"
 log "Database dump complete: $(du -sh "$DB_FILE" | cut -f1)"
@@ -52,7 +52,7 @@ log "Database dump complete: $(du -sh "$DB_FILE" | cut -f1)"
 # 2 — Odoo filestore (attachments, sessions, etc.)
 FS_FILE="$BACKUP_DIR/filestore_${TIMESTAMP}.tar.gz"
 log "Archiving filestore → $(basename "$FS_FILE")"
-docker exec "$ODOO_CONTAINER" \
+sudo docker exec "$ODOO_CONTAINER" \
     tar -czf - /var/lib/odoo/filestore 2>/dev/null \
     > "$FS_FILE" || true
 log "Filestore archive complete: $(du -sh "$FS_FILE" | cut -f1)"

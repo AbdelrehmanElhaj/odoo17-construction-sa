@@ -12,13 +12,17 @@ set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+COMPOSE="$(bash "$ROOT_DIR/.compose")"
+
 DB_NAME="${1:-ConstructionDemo}"
 ODOO_CONTAINER="odoo17"
 DB_CONTAINER="odoo17-db"
 DB_USER="odoo17"
 DB_PASS="odoo17"
 MODULE="construction_management"
-LOG_DIR="/home/ubuntu/odoo17-construction-sa/logs"
+LOG_DIR="$ROOT_DIR/logs"
 LOG_FILE="$LOG_DIR/demo_setup_$(date +%Y%m%d_%H%M%S).log"
 
 # ── Colors ────────────────────────────────────────────────────────────
@@ -45,6 +49,10 @@ db_exists() {
         postgres 2>/dev/null | grep -q 1
 }
 
+compose_cmd() {
+    cd "$ROOT_DIR" && $COMPOSE "$@"
+}
+
 # ── Banner ────────────────────────────────────────────────────────────
 
 echo ""
@@ -68,8 +76,7 @@ for cname in "$ODOO_CONTAINER" "$DB_CONTAINER"; do
         success "Container $cname is running"
     else
         error "Container $cname is $status"
-        echo    "  Start containers with:"
-        echo    "    cd /home/ubuntu/odoo17-construction-sa && sudo docker-compose up -d"
+        echo    "  Start containers with: cd $ROOT_DIR && ./start.sh"
         exit 1
     fi
 done
@@ -123,7 +130,7 @@ sudo docker exec "$ODOO_CONTAINER" \
     odoo \
     --database "$DB_NAME" \
     --init     "$MODULE" \
-    --load-language ar_SA \
+    --load-language ar_001 \
     --stop-after-init \
     --log-level info \
     2>&1 | tee "$LOG_FILE" | \
@@ -157,27 +164,26 @@ fi
 step "Phase 4/5 — Company setup"
 info "Configuring company name, country, currency, and VAT for ZATCA..."
 
-sudo docker exec "$ODOO_CONTAINER" \
-    odoo shell \
-    --database "$DB_NAME" \
-    --no-http \
-    --log-level error \
-    2>/dev/null <<'PYEOF'
-company = env['res.company'].browse(1)
-sar = env.ref('base.SAR', raise_if_not_found=False)
-sa  = env.ref('base.sa',  raise_if_not_found=False)
-vals = {
-    'name':    'شركة PropTech للإنشاءات والتطوير',
-    'vat':     '310000000000001',
-}
-if sar:
-    vals['currency_id'] = sar.id
-if sa:
-    vals['country_id'] = sa.id
-company.write(vals)
-env.cr.commit()
-print('Company configured.')
-PYEOF
+COMPANY_SCRIPT="
+import odoo
+from odoo.api import Environment
+import odoo.modules.registry
+odoo.tools.config.parse_config(['--database=$DB_NAME','--no-http','--log-level=error'])
+registry = odoo.modules.registry.Registry($DB_NAME)
+with registry.cursor() as cr:
+    env = Environment(cr, odoo.SUPERUSER_ID, {})
+    company = env['res.company'].browse(1)
+    sar = env.ref('base.SAR', raise_if_not_found=False)
+    sa  = env.ref('base.sa',  raise_if_not_found=False)
+    vals = {'name': 'شركة PropTech للإنشاءات والتطوير', 'vat': '310000000000001'}
+    if sar: vals['currency_id'] = sar.id
+    if sa:  vals['country_id'] = sa.id
+    company.write(vals)
+    cr.commit()
+    print('Company configured.')
+"
+
+sudo docker exec "$ODOO_CONTAINER" python3 -c "$COMPANY_SCRIPT" 2>&1 | grep -v "^$" || true
 
 success "Company set: شركة PropTech للإنشاءات والتطوير | VAT 310000000000001 | SAR | SA"
 
@@ -225,19 +231,19 @@ echo    ""
 echo    "  Option 1 — Temporarily allow any DB (revert after demo):"
 echo    "    sudo sed -i 's/dbfilter.*/dbfilter = .*/' \\"
 echo    "      /home/ubuntu/odoo17-construction-sa/config/odoo.conf"
-echo    "    sudo docker-compose restart web"
+echo    "    cd $ROOT_DIR && $COMPOSE restart web"
 echo    "    # Then visit https://csm.hdrelhaj.com and switch to $DB_NAME"
 echo    "    # Login: admin / admin"
 echo    ""
 echo    "  Option 2 — Switch production to the demo DB:"
 echo    "    sudo sed -i \"s/dbfilter.*/dbfilter = ^${DB_NAME}\$/\" \\"
 echo    "      /home/ubuntu/odoo17-construction-sa/config/odoo.conf"
-echo    "    sudo docker-compose restart web"
+echo    "    cd $ROOT_DIR && $COMPOSE restart web"
 echo    ""
 echo    "  Option 3 — Restore production DB when done:"
 echo    "    sudo sed -i 's/dbfilter.*/dbfilter = ^ConstructionDB\$/' \\"
 echo    "      /home/ubuntu/odoo17-construction-sa/config/odoo.conf"
-echo    "    sudo docker-compose restart web"
+echo    "    cd $ROOT_DIR && $COMPOSE restart web"
 echo    ""
 echo    "  Full log: $LOG_FILE"
 echo ""

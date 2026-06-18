@@ -5,6 +5,9 @@
 
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
 JSON_MODE=false
 [[ "${1:-}" == "--json" ]] && JSON_MODE=true
 
@@ -30,7 +33,7 @@ echo "=== Odoo Health Check — $(date '+%Y-%m-%d %H:%M:%S') ==="
 echo ""
 echo "Containers:"
 for cname in odoo17 odoo17-db; do
-    status=$(sudo docker inspect --format '{{.State.Status}}' "$cname" 2>/dev/null || echo "missing")
+    status=$(docker inspect --format '{{.State.Status}}' "$cname" 2>/dev/null || echo "missing")
     if [ "$status" = "running" ]; then
         ok "$cname → running"
     else
@@ -84,7 +87,7 @@ fi
 echo ""
 echo "SSL:"
 cert="/etc/letsencrypt/live/csm.hdrelhaj.com/fullchain.pem"
-if sudo test -f "$cert" 2>/dev/null; then
+if sudo test -f "$cert"; then
     expiry=$(sudo openssl x509 -enddate -noout -in "$cert" 2>/dev/null | cut -d= -f2)
     days_left=$(( ( $(date -d "$expiry" +%s) - $(date +%s) ) / 86400 ))
     if [ "$days_left" -lt 14 ]; then
@@ -101,7 +104,7 @@ fi
 # 7 — Odoo log errors in last hour
 echo ""
 echo "Odoo log (last hour):"
-LOG="/home/ubuntu/odoo17-construction-sa/logs/odoo.log"
+LOG="$ROOT_DIR/logs/odoo.log"
 if [ -f "$LOG" ]; then
     errors=$(awk -v d="$(date -d '1 hour ago' '+%Y-%m-%d %H:%M')" '$0 >= d && /ERROR/' "$LOG" | wc -l)
     if [ "$errors" -gt 0 ]; then
