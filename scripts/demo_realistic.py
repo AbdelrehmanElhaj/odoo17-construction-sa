@@ -586,5 +586,16 @@ def run(env):
     env['res.users'].browse(2).write({'groups_id': [(4, group.id)]})
     p('  Done')
 
+    # ── Hide Discuss from home screen ─────────────────────────────────────
+    p('[+] Hiding Discuss from home screen...')
+    discuss_menu = (env.ref('mail.mail_menu_root', raise_if_not_found=False)
+                    or env['ir.ui.menu'].search(
+                        [('web_icon', 'ilike', 'mail'), ('parent_id', '=', False)], limit=1))
+    if discuss_menu:
+        discuss_menu.write({'active': False})
+        p('  Done')
+    else:
+        p('  Discuss menu not found — skipped')
+
 if __name__ == '__main__':
     main()
