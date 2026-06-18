@@ -1,43 +1,60 @@
 services:
   db:
     image: postgres:15
-    container_name: odoo17-db
+    container_name: cms-db
     environment:
       - POSTGRES_USER=odoo17
       - POSTGRES_PASSWORD=odoo17
       - POSTGRES_DB=postgres
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - odoo-db-data:/var/lib/postgresql/data/pgdata
+      - cms-db-data:/var/lib/postgresql/data/pgdata
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U odoo17"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - internal
 
   web:
     build: .
     image: odoo17-construction:latest
-    container_name: odoo17
+    container_name: cms-odoo
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "127.0.0.1:8069:8069"
+    expose:
+      - "8069"
     environment:
       - HOST=db
       - USER=odoo17
       - PASSWORD=odoo17
+      # nginx-proxy routing
+      - VIRTUAL_HOST=cms.hdrelhaj.com
+      - VIRTUAL_PORT=8069
+      # Let's Encrypt
+      - LETSENCRYPT_HOST=cms.hdrelhaj.com
+      - LETSENCRYPT_EMAIL=a.elhaj@proptech.sa
     volumes:
-      - odoo-web-data:/var/lib/odoo
+      - cms-web-data:/var/lib/odoo
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
       - ./logs:/var/log/odoo
     restart: unless-stopped
+    networks:
+      - internal
+      - web
 
 volumes:
-  odoo-web-data:
+  cms-web-data:
     driver: local
-  odoo-db-data:
+  cms-db-data:
     driver: local
+
+networks:
+  internal:
+    driver: bridge
+  web:
+    external: true

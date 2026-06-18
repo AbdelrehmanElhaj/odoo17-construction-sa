@@ -17,8 +17,8 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 COMPOSE="$(bash "$ROOT_DIR/.compose")"
 
 DB_NAME="${1:-ConstructionDemo}"
-ODOO_CONTAINER="odoo17"
-DB_CONTAINER="odoo17-db"
+ODOO_CONTAINER="cms-odoo"
+DB_CONTAINER="cms-db"
 DB_USER="odoo17"
 DB_PASS="odoo17"
 MODULE="construction_management"
@@ -169,7 +169,7 @@ import odoo
 from odoo.api import Environment
 import odoo.modules.registry
 odoo.tools.config.parse_config(['--database=$DB_NAME','--no-http','--log-level=error'])
-registry = odoo.modules.registry.Registry($DB_NAME)
+registry = odoo.modules.registry.Registry('$DB_NAME')
 with registry.cursor() as cr:
     env = Environment(cr, odoo.SUPERUSER_ID, {})
     company = env['res.company'].browse(1)
