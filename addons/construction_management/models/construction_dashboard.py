@@ -74,9 +74,11 @@ class ConstructionDashboard(models.Model):
             [('state', 'in', ('approved', 'paid'))], ['amount_net:sum'], [])
         total_cer = (cert_agg[0].get('amount_net') or 0.0) if cert_agg else 0.0
 
-        # Certificate counts by state — single grouped query
-        cert_groups = Certificate.read_group([], ['state'], ['state'])
-        by_state = {g['state']: g['__count'] for g in cert_groups}
+        # Certificate counts by state
+        count_cert_draft    = Certificate.search_count([('state', '=', 'draft')])
+        count_cert_review   = Certificate.search_count([('state', '=', 'review')])
+        count_cert_approved = Certificate.search_count([('state', '=', 'approved')])
+        count_cert_paid     = Certificate.search_count([('state', '=', 'paid')])
 
         # Payment counts — two targeted COUNT queries
         count_due     = PayLine.search_count([('state', '=', 'due')])
@@ -108,10 +110,10 @@ class ConstructionDashboard(models.Model):
             rec.total_paid           = total_tp
             rec.total_balance_due    = total_bd
 
-            rec.count_cert_draft    = by_state.get('draft',    0)
-            rec.count_cert_review   = by_state.get('review',   0)
-            rec.count_cert_approved = by_state.get('approved', 0)
-            rec.count_cert_paid     = by_state.get('paid',     0)
+            rec.count_cert_draft    = count_cert_draft
+            rec.count_cert_review   = count_cert_review
+            rec.count_cert_approved = count_cert_approved
+            rec.count_cert_paid     = count_cert_paid
 
             rec.count_payment_due     = count_due
             rec.count_payment_overdue = count_overdue
